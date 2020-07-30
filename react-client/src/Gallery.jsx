@@ -23,21 +23,23 @@ class Gallery extends React.Component {
   }
 
   onImageMouseOver(id) {
-    const target = document.getElementById(id);
-    const classNames = target.className;
+    console.log('what?')
+    // const target = document.getElementById(id);
+    // const classNames = target.className;
 
-    if (!classNames.includes('galleryImageSelected')) {
-      target.style.borderColor = '#969b9e';
-    }
+    // if (!classNames.includes('galleryImageSelected')) {
+    //   target.style.borderColor = '#969b9e';
+    // }
   }
 
   onImageMouseOut (id) {
-    const target = document.getElementById(id);
-    const classNames = target.className;
+    console.log('nope')
+    // const target = document.getElementById(id);
+    // const classNames = target.className;
 
-    if (!classNames.includes('galleryImageSelected')) {
-      target.style.borderColor = '#d4dadc';
-    }
+    // if (!classNames.includes('galleryImageSelected')) {
+    //   target.style.borderColor = '#d4dadc';
+    // }
   }
 
   getPosition() {
@@ -71,7 +73,7 @@ class Gallery extends React.Component {
     return (
       <div className="gallery">
         <div className="galleryMainImageDiv">
-          <img className="galleryMainImage" src={this.state.currentImage.medium} onMouseEnter={this.handleMouseEnter.bind(this)} onMouseMove={this.handleMouseMove.bind(this)} onMouseLeave={this.handleMouseLeave.bind(this)}/>
+          <img className="galleryMainImage" src={this.state.currentImage.medium} onMouseEnter={this.handleMouseEnter} onMouseMove={this.handleMouseMove} onMouseLeave={this.handleMouseLeave}/>
         </div>
         <div className="galleryZoomIconAndText">
           <div className="galleryZoomIcon"></div>
