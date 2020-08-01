@@ -9,6 +9,11 @@ app.use(cors());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+app.use('*.js', function (req, res, next) {
+  req.url += '.gz';
+  res.set('Content-Encoding', 'gzip');
+  next();
+});
 
 app.use(express.static(__dirname + '/../react-client/dist'));
 
