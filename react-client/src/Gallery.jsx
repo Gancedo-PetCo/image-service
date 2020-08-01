@@ -23,23 +23,21 @@ class Gallery extends React.Component {
   }
 
   onImageMouseOver(id) {
-    console.log('what?')
-    // const target = document.getElementById(id);
-    // const classNames = target.className;
+    const target = document.getElementById(id);
+    const classNames = target.className;
 
-    // if (!classNames.includes('galleryImageSelected')) {
-    //   target.style.borderColor = '#969b9e';
-    // }
+    if (!classNames.includes('galleryImageSelected')) {
+      target.style.borderColor = '#969b9e';
+    }
   }
 
   onImageMouseOut (id) {
-    console.log('nope')
-    // const target = document.getElementById(id);
-    // const classNames = target.className;
+    const target = document.getElementById(id);
+    const classNames = target.className;
 
-    // if (!classNames.includes('galleryImageSelected')) {
-    //   target.style.borderColor = '#d4dadc';
-    // }
+    if (!classNames.includes('galleryImageSelected')) {
+      target.style.borderColor = '#d4dadc';
+    }
   }
 
   getPosition() {
