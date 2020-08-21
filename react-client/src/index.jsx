@@ -13,12 +13,10 @@ class App extends React.Component {
   }
 
   componentDidMount () {
-    console.log('Item id', this.props.itemId)
     $.ajax ({
       url: config.itemImages + this.props.itemId,
       type: "get",
       success: (data) => {
-        console.log('Data returned form the server', data.itemImages);
         this.setState({
           itemImages: data.itemImages
         })

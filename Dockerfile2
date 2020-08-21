@@ -1,0 +1,11 @@
+# Usually to select particular version instead of latest
+FROM node:10.15.3 as base
+RUN mkdir -p /srv/app
+COPY . /srv/app
+WORKDIR /srv/app
+# Install production dependencies
+RUN npm install
+# Expose port for access outside of container
+ENV PORT 3003
+EXPOSE $PORT
+CMD npm run seed && node server/start.js

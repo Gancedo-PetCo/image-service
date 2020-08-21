@@ -51,6 +51,13 @@ test('successfully retrieves main image url for item 100', () => {
     })
 });
 
+test('successfully retrieves main image URLs for an "array" of images', () => {
+  return request(app).get('/itemImages/array123,154,100/mainImage')
+    .then((response) => {
+      expect(response.status).toBe(200);
+    })
+});
+
 test('returns 404 status code if item not found', () => {
   return request(app).get('/itemImages/200')
     .then((response) => {
@@ -60,6 +67,14 @@ test('returns 404 status code if item not found', () => {
 
 test('returns 404 status code if main image not found', () => {
   return request(app).get('/itemImages/200/mainImage')
+    .then((response) => {
+      expect(response.status).toBe(404);
+    })
+});
+
+
+test('returns 404 status code if an array contains an invalid imageId', () => {
+  return request(app).get('/itemImages/array123,200,100/mainImage')
     .then((response) => {
       expect(response.status).toBe(404);
     })

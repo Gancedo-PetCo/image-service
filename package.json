@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand",
-    "start": "nodemon server/start.js",
-    "client": "webpack -d --watch",
+    "test": "jest --runInBand --silent",
+    "start": "node server/start.js",
+    "client": "webpack",
     "build_client": "webpack",
     "seed": "node database-mongodb/seed.js"
   },
@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.19.2",
+    "compression-webpack-plugin": "^4.0.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "jquery": "^3.5.1",

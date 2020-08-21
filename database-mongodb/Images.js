@@ -17,6 +17,10 @@ function fetchItemImages (itemId) {
   return Image.findOne({ itemId: itemId }, '-_id -__v');
 }
 
+function fetchMultipleItemImages (itemIds) {
+  return Image.find({ itemId: { $in: itemIds }}).select('-_id -__v').exec();
+}
+
 function fetchAll() {
   return Image.find({});
 }
@@ -28,5 +32,6 @@ function deleteAll() {
 module.exports = Image;
 module.exports.insertRecords = insertRecords;
 module.exports.fetchItemImages = fetchItemImages;
+module.exports.fetchMultipleItemImages =fetchMultipleItemImages;
 module.exports.fetchAll = fetchAll;
 module.exports.deleteAll = deleteAll;

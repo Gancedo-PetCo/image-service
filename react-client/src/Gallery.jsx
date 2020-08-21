@@ -15,10 +15,29 @@ class Gallery extends React.Component {
     this.handleMouseLeave = this.handleMouseLeave.bind(this);
   }
 
-  onImageClick (image) {
+  onImageClick (image, id) {
+    document.getElementById(id).style.borderColor = 'rgb(0, 88, 145)';
     this.setState({
       currentImage: image
     });
+  }
+
+  onImageMouseOver(id) {
+    const target = document.getElementById(id);
+    const classNames = target.className;
+
+    if (!classNames.includes('galleryImageSelected')) {
+      target.style.borderColor = '#969b9e';
+    }
+  }
+
+  onImageMouseOut (id) {
+    const target = document.getElementById(id);
+    const classNames = target.className;
+
+    if (!classNames.includes('galleryImageSelected')) {
+      target.style.borderColor = '#d4dadc';
+    }
   }
 
   getPosition() {
@@ -31,7 +50,6 @@ class Gallery extends React.Component {
         x: e.nativeEvent.offsetX,
         y: e.nativeEvent.offsetY
     });
-    console.log(this.state.currentImage.large)
   }
 
   handleMouseMove(e){
@@ -61,8 +79,8 @@ class Gallery extends React.Component {
         </div>
         {this.state.preview && <div className="galleryPreview" style={{backgroundImage: `url(${this.state.currentImage.large})`, backgroundPosition: this.getPosition()}}></div>}
         <div className="gallerySmallImages">
-          {this.props.itemImages.map((image) =>
-              <img className={`gallerySmallImage ${this.state.currentImage.small === image.small ? "galleryImageSelected": ""}`} src={image.small} onClick={()=> this.onImageClick(image)}/>
+          {this.props.itemImages.map((image, index) =>
+              <img id={`gallerySmallImage${index}`} className={`gallerySmallImage ${this.state.currentImage.small === image.small ? "galleryImageSelected": ""}`} src={image.small} onClick={()=> this.onImageClick(image, `gallerySmallImage${index}`)} onMouseOver={this.onImageMouseOver.bind(this, `gallerySmallImage${index}`)} onMouseOut={this.onImageMouseOut.bind(this, `gallerySmallImage${index}`)} />
           )}
         </div>
     </div>
