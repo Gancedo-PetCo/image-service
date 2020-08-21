@@ -15,7 +15,7 @@ app.use('*.js', function (req, res, next) {
   next();
 });
 
-app.use(express.static(__dirname + '/../react-client/dist'));
+app.use(express.static('./react-client/dist'));
 
 
 app.get('/itemImages/:itemId', function(req, res) {
