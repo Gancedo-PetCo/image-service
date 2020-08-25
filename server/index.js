@@ -36,12 +36,6 @@ app.get('/itemImages/:itemId', function(req, res) {
 });
 
 const determineValidItemData = function(itemId, itemImages) {
-  const parsedItemId = Number.parseInt(itemId, 10);
-
-  if (typeof(parsedItemId) !== 'number' || parsedItemId < 100) {
-    return 'itemId invalid. Must be string representing integer number greater than 99';
-  }
-
   if (!Array.isArray(itemImages)) {
     return 'itemImages should be an array of itemImage objects, stringified with JSON.stringfy';
   }
@@ -79,13 +73,21 @@ app.post('/addItemImages/:itemId', (req, res) => {
   const { itemId } = req.params;
   const receivedItemImages = req.query.itemImages;
 
-  const itemImages = JSON.parse(receivedItemImages);
+  if (itemId) {
+    const parsedItemId = Number.parseInt(itemId, 10);
 
-  if (!itemId) {
-    return res.status(400).send('itemId missing from request params');
+    if (parsedItemId < 100 || !Number.isInteger(parsedItemId)) {
+      return res.status(400).send('itemId invalid. Must be string representing integer number greater than 99');
+    }
   }
 
-  if (!itemImages || itemImages.length === 0) {
+  if (!receivedItemImages) {
+    return res.status(400).send('No itemImages present in request query params');
+  }
+
+  const itemImages = JSON.parse(receivedItemImages);
+
+  if (itemImages.length === 0) {
     return res.status(400).send('No itemImages present in request query params');
   }
 
@@ -101,7 +103,7 @@ app.post('/addItemImages/:itemId', (req, res) => {
         } else {
           Images.insertRecord({ itemId, itemImages })
             .then((data) => {
-              res.status(201).send(`Item ${itemiD} succesfully added to database`);
+              res.status(201).send(`Item ${itemId} succesfully added to database`);
             })
             .catch((err) => {
               console.log(err);
@@ -120,20 +122,28 @@ app.put('/updateItemImages/:itemId', (req, res) => {
   const { itemId } = req.params;
   const receivedItemImages = req.query.itemImages;
 
-  const itemImages = JSON.parse(receivedItemImages);
+  if (itemId) {
+    const parsedItemId = Number.parseInt(itemId, 10);
 
-  if (!itemId) {
-    return res.status(400).send('itemId missing from request params');
+    if (parsedItemId < 100 || !Number.isInteger(parsedItemId)) {
+      return res.status(400).send('itemId invalid. Must be string representing integer number greater than 99');
+    }
   }
 
-  if (!itemImages || itemImages.length === 0) {
+  if (!receivedItemImages) {
+    return res.status(400).send('No itemImages present in request query params');
+  }
+
+  const itemImages = JSON.parse(receivedItemImages);
+
+  if (itemImages.length === 0) {
     return res.status(400).send('No itemImages present in request query params');
   }
 
   Images.fetchItemImages(itemId)
     .then((data) => {
       if (!data) {
-        res.status(400).send('Item with that itemId does not exist');
+        res.status(400).send(`Item with the itemId ${itemId} does not exist`);
       } else {
         const potentialErrorMessage = determineValidItemData(itemId, itemImages);
 
@@ -160,8 +170,12 @@ app.put('/updateItemImages/:itemId', (req, res) => {
 app.delete('/deleteItemImages/:itemId', (req, res) => {
   const { itemId } = req.params;
 
-  if (!itemId) {
-    return res.status(400).send('itemId missing from request params');
+  if (itemId) {
+    const parsedItemId = Number.parseInt(itemId, 10);
+
+    if (parsedItemId < 100 || !Number.isInteger(parsedItemId)) {
+      return res.status(400).send('itemId invalid. Must be string representing integer number greater than 99');
+    }
   }
 
   Images.fetchItemImages(itemId)
