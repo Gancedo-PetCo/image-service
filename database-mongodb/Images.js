@@ -13,6 +13,19 @@ function insertRecords (records) {
   return Image.insertMany(records);
 }
 
+function insertRecord (record) {
+  const newRecord = new Image(record);
+  return newRecord.save();
+}
+
+function updateRecord (record) {
+  return Image.findOneAndUpdate({ itemId: record.itemId }, record);
+}
+
+function deleteRecord (itemId) {
+  return Image.findOneAndDelete({ itemId });
+}
+
 function fetchItemImages (itemId) {
   return Image.findOne({ itemId: itemId }, '-_id -__v');
 }
@@ -31,6 +44,9 @@ function deleteAll() {
 
 module.exports = Image;
 module.exports.insertRecords = insertRecords;
+module.exports.insertRecord = insertRecord;
+module.exports.updateRecord = updateRecord;
+module.exports.deleteRecord = deleteRecord;
 module.exports.fetchItemImages = fetchItemImages;
 module.exports.fetchMultipleItemImages =fetchMultipleItemImages;
 module.exports.fetchAll = fetchAll;
