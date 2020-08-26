@@ -24,7 +24,22 @@ app.get('/itemImages/:itemId', function(req, res) {
   Images.fetchItemImages(itemId)
     .then((data) => {
       if (data) {
-        res.status(200).send(data);
+        const { itemId, itemImages } = data;
+        const modifiedItemImages = [];
+
+        for (let i = 0; i < itemImages.length; i++) {
+          const copyOfObject = {};
+
+          for(let key in itemImages[i]) {
+            if (key === 'small' || key === 'medium' || key === 'large') {
+              copyOfObject[key] = itemImages[i][key];
+            }
+          }
+
+          modifiedItemImages.push(copyOfObject);
+        }
+
+        res.status(200).send({ itemId, itemImages: modifiedItemImages });
       } else {
         res.sendStatus(404);
       }
