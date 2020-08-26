@@ -1,4 +1,93 @@
-# photo-gallery
+# image-service
+
+## Table of contents
+1. Usage
+2. CRUD API
+
+## Usage
+
+1. With the app's root directory set to cd in terminal, run >npm install
+2. Make an API account with https://unsplash.com/documentation#creating-a-developer-account
+3. In the app's root folder, there is a file titled "config.example.js". Make a duplicate of this file and rename it to "config.js". Then use the terminal to run >git status. You should not see the new config.js file listed. If you do, then the name of the file is wrong. Once the correct name of the file is confirmed, you can copy your Unsplash API key to the file.
+4. You can now seed the database by running >npm run seed
+5. Start server with >npm run start
+6. To run tests, >npm run test
+
+## CRUD API
+
+The CRUD API can be found below. Each item in the API corresponds to the following rules:
+
+:itemId -  a string version of an integer greater than 100
+
+:itemData - JSON string of an array filled with at least one itemImage object
+
+itemImage object - {
+  small: 'valid image URL',
+  medium: 'valid image URL',
+  large: 'valid image URL'
+}
+
+NOTE1: For 'valid image URL', the endpoint confirms that the URL format is correct. It does not confirm that the URL leads to a valid image. That is your responsibility.
+NOTE2: The expected dimensions for each photograph are, roughly, in pixels:
+  small 54x54
+  medium: 400x400
+  large: 755x755
+NOTE3: The expected dimensions are not strictly enforced and, for the 'large" dimensions in particular, can vary widely. However, it is advised to do the following two things: The first dimension is expected to to be the exact pixel amount. For the second number, you should try to get the pixels as close as possible to it.
+
+itemImages object - {
+  itemId: String representing the item's integer ID number,
+  itemImages: An array filled with at least one itemImage object
+}
+
+mainImage object - {
+image: URL String for the smallest image size, for the very first image found in the array you would get from GET /itemImages/:itemId
+}
+
+
+### CREATE
+
+Method: POST
+Endpoint: /addItemImages/:itemId?itemImages=:itemData
+Response: The string: Item ${itemId} succesfully added to database
+
+
+### READ
+
+Method: GET
+Endpoint: /itemImages/:itemId
+Response: itemImages object
+
+
+Method: GET
+Endpoint: /itemImages/:itemId/mainImage
+Response: mainImage object
+
+-----Special-----
+Method: GET
+Endpoint: /itemImages/:itemId/mainImage
+SPECIAL: For this endpoint, the :itemId can actually be an "array" of itemIds. This array is in the format array###,###,### where each ### is a valid itemId
+Response: An array of slightly modified mainImage objects. Each object has the additional field: itemId: String representing the item's integer ID number
+
+Note1: The returned array is not gauranteed to have the mainImage objects in the same order that the itemIds appear in the input "array"
+-----Special-----
+
+
+### UPDATE
+
+Method: PUT
+Endpoint: /addItemImages/:itemId?itemImages=:itemData
+Response: The string: Item ${itemId} succesfully updated
+
+
+### DELETE
+
+Method: DELETE
+Endpoint: /itemImages/:itemId
+Response: The string: Item ${itemId} deleted
+
+
+
+-----------------------------------------------------------(Everything below this line might be out of date)
 
 This service is meant to be used with a proxy server. If that is your intended use:
 
