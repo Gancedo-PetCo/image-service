@@ -1,17 +1,10 @@
-const insertImages = require('./insert_images.js');
-const Images = require('./Images.js');
-const mongoose = require('mongoose');
-
-beforeAll(() => {
-  return mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true })
-  .then(() => {
-    return Images.deleteAll()
-  })
-})
-
-afterAll(() => {
-  return mongoose.connection.close();
-})
+const {
+  promisesArray,
+  extractURLs,
+  insertImages,
+  getUnsplashImages,
+  handleSeeding,
+} = require('./seed.js');
 
 test('insert images', () => {
   let urlsArray = [];
