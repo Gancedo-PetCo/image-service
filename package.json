@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand",
+    "test": "jest --runInBand --silent",
     "start": "node server/start.js",
     "client": "webpack",
     "build_client": "webpack",
