@@ -4,9 +4,11 @@ const Images = require('./Images.js');
 const axios = require('axios');
 const token = require('../config.js').TOKEN;
 
-const urls = [];
+
 
 const extractURLs = function (responses) {
+  const urls = [];
+
   for (let response of responses) {
     const { results } = response.data;
 
@@ -72,7 +74,8 @@ const groupImageData = (urls, batch) => {
     }
 
 
-    let numberOfPicturesItemHas = Math.ceil(Math.random() * 3);
+    let numberOfPicturesItemHas = Math.floor(Math.random() * 3) + 1;
+
     const picturesItemHas = [];
 
     while (numberOfPicturesItemHas > 0) {
@@ -80,7 +83,7 @@ const groupImageData = (urls, batch) => {
       const potentialPicture = urls[randomPictureIndex];
 
       if (picturesItemHas.indexOf(potentialPicture) === -1) {
-        picturesItemHas.push(picturesItemHas);
+        picturesItemHas.push(potentialPicture);
         numberOfPicturesItemHas--;
       }
     }
@@ -88,7 +91,7 @@ const groupImageData = (urls, batch) => {
     const itemId = (startingItemIdForThisBatch + count).toString();
     const picturesItemHasString = picturesItemHas.join('XXX');
 
-    batchOfItemObjects.push({ itemId, picturesItemHasString });
+    batchOfItemObjects.push({ itemId, itemImages: picturesItemHasString });
 
     count++;
   }
@@ -131,4 +134,5 @@ module.exports.promisesArray = promisesArray;
 module.exports.extractURLs = extractURLs;
 module.exports.insertImages = insertImages;
 module.exports.getUnsplashImages = getUnsplashImages;
+module.exports.groupImageData = groupImageData;
 module.exports.handleSeeding = handleSeeding;
