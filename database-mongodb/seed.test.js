@@ -1,45 +1,194 @@
-const insertImages = require('./insert_images.js');
-const Images = require('./Images.js');
-const mongoose = require('mongoose');
+const {
+  promisesArray,
+  extractURLs,
+  groupImageData,
+  insertImages,
+  handleSeeding,
+} = require('./seed.js');
 
-beforeAll(() => {
-  return mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true })
-  .then(() => {
-    return Images.deleteAll()
-  })
-})
+const mockResponse1 = {
+  data: {
+    total: 10,
+    totalPages: 2,
+    results: [
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL0-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL1-moreFakeURL?bad' } },
+      { urls: { small: 'badURL0', regular: 'https://images.unsplash.com/photo-fakeURL2-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL3-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL4-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL5-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL6-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL7-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL8-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL9-moreFakeURL?bad', large: 'badURL1' } },
+    ],
+  },
+};
 
-afterAll(() => {
-  return mongoose.connection.close();
-})
+const mockResponse2 = {
+  data: {
+    total: 10,
+    totalPages: 2,
+    results: [
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL10-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL11-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL12-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL13-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL14-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL15-moreFakeURL?bad', medium: 'badURL2', } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL16-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL17-moreFakeURL?bad' } },
+      { urls: { small: 'badURL3', regular: 'https://images.unsplash.com/photo-fakeURL18-moreFakeURL?bad' } },
+      { urls: { regular: 'https://images.unsplash.com/photo-fakeURL19-moreFakeURL?bad' } },
+    ],
+  },
+};
 
-test('insert images', () => {
-  let urlsArray = [];
-  for (let i = 1; i < 301; i++) {
-    urlsArray.push(`https://images.unsplash.com/photo-${i}?w=1080`)
-  }
-  return insertImages(urlsArray)
-    .then(() => {
-      return Images.fetchAll();
-    })
-    .then(records => {
-      let dbItemIds = records.map((record) => {
-        return record.itemId;
-      })
-      expect(dbItemIds).toHaveLength(100);
-      for (let i = 100; i < 200; i++) {
-        expect(dbItemIds).toContain(i.toString());
+const mockPromisesAray = [mockResponse1, mockResponse2];
+
+describe('The seeding script', () => {
+  // test('should successfully contact the Unsplash API with four requests', () => {
+  //   //The first parameter is the number of requests expected to reach the API per query.
+  //   //Since there are two queries (puppy and kitten), that should total four requests.
+  //   return handleSeeding(2, 10, 2, false)
+  //     .then(() => {
+  //       expect(promisesArray.length).toBe(4);
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     })
+  // });
+
+  describe('has a helper function extractURLs that', () => {
+    test('should extract only regular URLs from an Unspalsh API response', () => {
+      const extractedURLs = extractURLs(mockPromisesAray);
+
+      for (let i = 0; i < extractedURLs.length; i++) {
+        const extractedURL = extractedURLs[i];
+        expect(typeof(extractedURL)).toBe('string');
+        expect(extractedURL).toContain('fakeURL');
+        expect(extractedURLs.indexOf(extractedURL, i + 1)).toBe(-1);
       }
-      for (let record of records) {
-        expect(record.itemImages).toHaveLength(3);
-        for (let itemImage of record.itemImages) {
-          expect(itemImage.small.startsWith('https://images.unsplash.com/photo-')).toBe(true);
-          expect(itemImage.small.endsWith('?w=54')).toBe(true);
-          expect(itemImage.medium.startsWith('https://images.unsplash.com/photo-')).toBe(true);
-          expect(itemImage.medium.endsWith('?w=400')).toBe(true);
-          expect(itemImage.large.startsWith('https://images.unsplash.com/photo-')).toBe(true);
-          expect(itemImage.large.endsWith('?w=1000')).toBe(true);
+
+      expect(extractedURLs).toHaveLength(20);
+    });
+
+    test('should extract only the relevent portion of each URL', () => {
+      const extractedURLs = extractURLs(mockPromisesAray);
+
+      for (let i = 0; i < extractedURLs.length; i++) {
+        const extractedURL = extractedURLs[i];
+        expect(extractedURL.indexOf('bad')).toBe(-1);
+        expect(extractedURL.indexOf('photo')).toBe(-1);
+        expect(extractedURL).toContain('fakeURL');
+        expect(extractedURL).toContain('moreFakeURL');
+      }
+    });
+  });
+
+  describe('has a helper function groupImageData that', () => {
+    test('should generate 1000 objects', () => {
+      const extractedURLs = extractURLs(mockPromisesAray);
+      const generatedBatch = groupImageData(extractedURLs, 0);
+
+
+      for (let i = 0; i < generatedBatch.length; i++) {
+        const generatedObject = generatedBatch[i];
+        expect(typeof(generatedObject)).toBe('object');
+      }
+
+      expect(generatedBatch.length).toBe(1000);
+    });
+
+    describe('should generate every object such that each object', () => {
+      test('should contain the keys "itemImages" and "itemId"', () => {
+        const extractedURLs = extractURLs(mockPromisesAray);
+        const generatedBatch = groupImageData(extractedURLs, 0);
+
+
+        for (let i = 0; i < generatedBatch.length; i++) {
+          const generatedObject = generatedBatch[i];
+          const keys = [];
+          for (let key in generatedObject) {
+            keys.push(key);
+          }
+          expect(keys.length).toBe(2);
+          expect(keys).toContain('itemId');
+          expect(keys).toContain('itemImages');
         }
-      }
-    })
+      });
+
+      test('should contain an unique "itemId" in the range 100-1099 for batch 0', () => {
+        const extractedURLs = extractURLs(mockPromisesAray);
+        const generatedBatch = groupImageData(extractedURLs, 0);
+        let count = 100;
+
+        for (let i = 0; i < generatedBatch.length; i++) {
+          const { itemId } = generatedBatch[i];
+
+          expect(itemId).toBe(count.toString());
+
+          count++;
+        }
+        expect(generatedBatch.length).toBe(1000);
+      });
+
+      test('should contain an unique "itemId" in the range 1100-1199 for batch 1', () => {
+        const extractedURLs = extractURLs(mockPromisesAray);
+        const generatedBatch = groupImageData(extractedURLs, 1);
+        let count = 1100;
+
+        for (let i = 0; i < generatedBatch.length; i++) {
+          const { itemId } = generatedBatch[i];
+
+          expect(itemId).toBe(count.toString());
+
+          count++;
+        }
+        expect(generatedBatch.length).toBe(1000);
+      });
+
+      test('should contain a string for "itemImages"', () => {
+        const extractedURLs = extractURLs(mockPromisesAray);
+        const generatedBatch = groupImageData(extractedURLs, 1);
+
+        for (let i = 0; i < generatedBatch.length; i++) {
+          const { itemImages } = generatedBatch[i];
+
+          expect(typeof(itemImages)).toBe('string');
+        }
+      });
+
+      test('should have a "itemImages" string that conforms to the standard', () => {
+        const extractedURLs = extractURLs(mockPromisesAray);
+        const generatedBatch = groupImageData(extractedURLs, 1);
+
+        for (let i = 0; i < generatedBatch.length; i++) {
+          const { itemImages } = generatedBatch[i];
+          const splitItemImages = itemImages.split('XXX');
+
+          expect(splitItemImages.length).toBeGreaterThanOrEqual(1);
+          expect(splitItemImages.length).toBeLessThanOrEqual(3);
+          for (let j = 0; j < splitItemImages.length; j++) {
+            expect(extractedURLs.indexOf(splitItemImages[j])).toBeGreaterThan(-1);
+          }
+        }
+      });
+    });
+  });
+
+  describe('has a helper function insertImages that', () => {
+    test('should generate two batches of 1000 objects each when told to do so', () => {
+      const extractedURLs = extractURLs(mockPromisesAray);
+      return insertImages(extractedURLs, 2, false)
+        .then((generatedBatches) => {
+          for (let i = 0; i < generatedBatches.length; i++) {
+            const generatedBatch = generatedBatches[i];
+            expect(generatedBatch.length).toBe(1000);
+          }
+
+          expect(generatedBatches.length).toBe(2);
+        });
+    });
+  });
 });

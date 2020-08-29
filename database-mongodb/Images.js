@@ -3,7 +3,7 @@ mongoose.Promise = global.Promise;
 
 const imageSchema = new mongoose.Schema({
   itemId: String,
-  itemImages: [{small: String, medium: String, large: String}]
+  itemImages: String
 });
 
 const Image = mongoose.model('Image', imageSchema);

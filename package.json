@@ -8,7 +8,7 @@
     "start": "node server/start.js",
     "client": "webpack",
     "build_client": "webpack",
-    "seed": "node database-mongodb/seed.js"
+    "seed": "node database-mongodb/initiateSeeding.js"
   },
   "author": "",
   "license": "ISC",
