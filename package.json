@@ -8,18 +8,21 @@
     "start": "node server/start.js",
     "client": "webpack",
     "build_client": "webpack",
-    "seed": "node database-mongodb/initiateSeeding.js"
+    "seed": "node database-mongodb/initiateSeeding.js",
+    "seedMySQL": "node database-mongodb/MySQL/initiateSeeding.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.19.2",
+    "bluebird": "^3.7.2",
     "compression-webpack-plugin": "^4.0.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "jquery": "^3.5.1",
     "mongoose": "^5.9.18",
     "morgan": "^1.10.0",
+    "mysql": "^2.18.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   },
