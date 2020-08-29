@@ -7,7 +7,7 @@ var connection = mysql.createConnection({
   password: mysqlPassword,
 });
 
-const table = 'CREATE TABLE IF NOT EXISTS SDC_Image_Service_MySQL.images (itemId VARCHAR(10) NOT NULL UNIQUE PRIMARY KEY, itemImages VARCHAR(110) NOT NULL)';
+const table = 'CREATE TABLE IF NOT EXISTS SDC_Image_Service_MySQL.images (itemId VARCHAR(10) NOT NULL UNIQUE PRIMARY KEY, itemImages VARCHAR(90) NOT NULL)';
 
 connection.connect((err) => {
   if (err) {
