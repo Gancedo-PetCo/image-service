@@ -8,6 +8,7 @@ var connection = mysql.createConnection({
 });
 
 const table = 'CREATE TABLE IF NOT EXISTS SDC_Image_Service_MySQL.images (itemId VARCHAR(10) NOT NULL UNIQUE PRIMARY KEY, itemImages VARCHAR(90) NOT NULL)';
+const badTable = 'CREATE TABLE IF NOT EXISTS SDC_Image_Service_MySQL.imagesBad (indexNumber MEDIUMINT NOT NULL UNIQUE PRIMARY KEY AUTO_INCREMENT, itemId VARCHAR(10) NOT NULL, itemImages VARCHAR(90) NOT NULL)';
 
 connection.connect((err) => {
   if (err) {
@@ -23,17 +24,21 @@ connection.connect((err) => {
           if (err) {
             console.log(err);
           } else {
-            const seed = require('./seed.js');
-            //when generating 10,000,000 records change arguments to: (10, 25, 10000, true)
-            //arguments map to numberOfRequests, urlsPerRequest, totalNumberOfBatches, and actuallyInsert
-            seed.handleSeeding(2, 25, 2, true);
+            connection.query(badTable, (err) => {
+              if (err) {
+                console.log(err);
+              } else {
+                const seed = require('./seed.js');
+                //when generating 10,000,000 records change arguments to: (10, 25, 10000, true)
+                //arguments map to numberOfRequests, urlsPerRequest, totalNumberOfBatches, and actuallyInsert
+                seed.handleSeeding(2, 25, 2, true);
+              }
+              connection.end();
+            });
           }
-          connection.end();
-        }
-        );
+        });
       }
     });
   }
 });
-
 

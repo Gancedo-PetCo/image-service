@@ -14,17 +14,24 @@ connection.connect((err) => {
 
 function insertRecords (records) {
   let insertionsParsedToMySQLSyntax = '';
+  let insertionsParsedToMySQLSyntaxBad = '';
   for (let i = 0; i < records.length; i++) {
     if (i !== 999) {
-      insertionsParsedToMySQLSyntax = insertionsParsedToMySQLSyntax + "('" + records[i].itemId+ "','" + records[i].itemImages+ "'),";
+      insertionsParsedToMySQLSyntax = insertionsParsedToMySQLSyntax + "('" + records[i].itemId + "','" + records[i].itemImages + "'),";
+      insertionsParsedToMySQLSyntaxBad = insertionsParsedToMySQLSyntaxBad + "(NULL,'" + records[i].itemId + "','" + records[i].itemImages + "'),";
     } else {
-      insertionsParsedToMySQLSyntax = insertionsParsedToMySQLSyntax + "('" + records[i].itemId+ "','" + records[i].itemImages+ "')";
+      insertionsParsedToMySQLSyntax = insertionsParsedToMySQLSyntax + "('" + records[i].itemId + "','" + records[i].itemImages + "')";
+      insertionsParsedToMySQLSyntaxBad = insertionsParsedToMySQLSyntaxBad + "(NULL,'" + records[i].itemId + "','" + records[i].itemImages + "')";
     }
 
   }
-  const query = `INSERT INTO images (itemId,itemImages) VALUES${insertionsParsedToMySQLSyntax}`;
+  const queryPairs = [];
+  const query = `INSERT INTO images (itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntax}`;
+  const queryTwo = `INSERT INTO imagesBad (indexNumber,itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntaxBad}`;
 
-  return connection.queryAsync(query);
+  queryPairs.push(connection.queryAsync(query));
+  queryPairs.push(connection.queryAsync(queryTwo));
+  return Promise.all(queryPairs);
 }
 
 function insertRecord (record) {
