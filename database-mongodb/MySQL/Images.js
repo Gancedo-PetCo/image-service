@@ -21,7 +21,7 @@ function insertRecords (records) {
       insertionsParsedToMySQLSyntaxBad = insertionsParsedToMySQLSyntaxBad + "(NULL,'" + records[i].itemId + "','" + records[i].itemImages + "'),";
     } else {
       insertionsParsedToMySQLSyntax = insertionsParsedToMySQLSyntax + "('" + records[i].itemId + "','" + records[i].itemImages + "')";
-      insertionsParsedToMySQLSyntaxBad = insertionsParsedToMySQLSyntaxBad + "(NULL,'" + records[i].itemId + "','" + records[i].itemImages + "')";
+      insertionsParsedToMySQLSyntaxBad = insertionsParsedToMySQLSyntaxBad + "(" + (Number.parseInt(records[i].itemId, 10) - 100) + ",'" + records[i].itemId + "','" + records[i].itemImages + "')";
     }
 
   }

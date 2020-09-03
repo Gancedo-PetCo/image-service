@@ -25,31 +25,37 @@ const extractURLs = function (responses) {
 
 const promisesArray = [];
 
-const getUnsplashImages = (numberOfRequests, urlsPerRequest) => {
-  for (let i = 1; i <= numberOfRequests; i++) {
-    let options = {
-      method: 'get',
-      url: `https://api.unsplash.com/search/photos?query=puppy&page=${i}&per_page=${urlsPerRequest}`,
-      headers: {
-        'Authorization': `Client-ID ${token}`,
-        'Accept-Version': 'v1'
-      }
-    };
+const getUnsplashImages = (numberOfRequests, urlsPerRequest, data) => {
+  if (data) {
+    for (let i = 0; i < data.length; i++) {
+      promisesArray.push({ data: data[i] });
+    }
+  } else {
+    for (let i = 1; i <= numberOfRequests; i++) {
+      let options = {
+        method: 'get',
+        url: `https://api.unsplash.com/search/photos?query=puppy&page=${i}&per_page=${urlsPerRequest}`,
+        headers: {
+          'Authorization': `Client-ID ${token}`,
+          'Accept-Version': 'v1'
+        }
+      };
 
-    promisesArray.push(axios(options));
-  }
+      promisesArray.push(axios(options));
+    }
 
-  for (let i = 1; i <= numberOfRequests; i++) {
-    let options = {
-      method: 'get',
-      url: `https://api.unsplash.com/search/photos?query=kitten&page=${i}&per_page=${urlsPerRequest}`,
-      headers: {
-        'Authorization': `Client-ID ${token}`,
-        'Accept-Version': 'v1'
-      }
-    };
+    for (let i = 1; i <= numberOfRequests; i++) {
+      let options = {
+        method: 'get',
+        url: `https://api.unsplash.com/search/photos?query=kitten&page=${i}&per_page=${urlsPerRequest}`,
+        headers: {
+          'Authorization': `Client-ID ${token}`,
+          'Accept-Version': 'v1'
+        }
+      };
 
-    promisesArray.push(axios(options));
+      promisesArray.push(axios(options));
+    }
   }
 
   return Promise.all(promisesArray)
@@ -113,9 +119,9 @@ const insertImages = function (urls, totalNumberOfBatches, actuallyInsert) {
   return Promise.all(dataInsertions);
 };
 
-const handleSeeding = function(numberOfRequests, urlsPerRequest, totalNumberOfBatches, actuallyInsert) {
+const handleSeeding = function(numberOfRequests, urlsPerRequest, totalNumberOfBatches, actuallyInsert, data) {
 
-  return getUnsplashImages(numberOfRequests, urlsPerRequest)
+  return getUnsplashImages(numberOfRequests, urlsPerRequest, data)
     .then((urlsArray) => {
       return insertImages(urlsArray, totalNumberOfBatches, actuallyInsert);
     })

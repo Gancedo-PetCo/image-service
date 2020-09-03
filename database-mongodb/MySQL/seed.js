@@ -4,19 +4,20 @@ const axios = require('axios');
 const token = require('../../config.js').TOKEN;
 
 
+const urls = [];
 
 const extractURLs = function (responses) {
-  const urls = [];
+  if (urls.length === 0) {
+    for (let response of responses) {
+      const { results } = response.data;
 
-  for (let response of responses) {
-    const { results } = response.data;
-
-    for (let result of results) {
-      const { regular } = result.urls;
-      const splitThatRemovesQueries = regular.split('?');
-      const indexStartOfUniquePhotoId = splitThatRemovesQueries[0].indexOf('-');
-      let uniquePhotoId = splitThatRemovesQueries[0].substring(indexStartOfUniquePhotoId + 1);
-      urls.push(uniquePhotoId);
+      for (let result of results) {
+        const { regular } = result.urls;
+        const splitThatRemovesQueries = regular.split('?');
+        const indexStartOfUniquePhotoId = splitThatRemovesQueries[0].indexOf('-');
+        let uniquePhotoId = splitThatRemovesQueries[0].substring(indexStartOfUniquePhotoId + 1);
+        urls.push(uniquePhotoId);
+      }
     }
   }
 
@@ -25,31 +26,39 @@ const extractURLs = function (responses) {
 
 const promisesArray = [];
 
-const getUnsplashImages = (numberOfRequests, urlsPerRequest) => {
-  for (let i = 1; i <= numberOfRequests; i++) {
-    let options = {
-      method: 'get',
-      url: `https://api.unsplash.com/search/photos?query=puppy&page=${i}&per_page=${urlsPerRequest}`,
-      headers: {
-        'Authorization': `Client-ID ${token}`,
-        'Accept-Version': 'v1'
+const getUnsplashImages = (numberOfRequests, urlsPerRequest, data) => {
+  if (promisesArray.length === 0) {
+    if (data) {
+      for (let i = 0; i < data.length; i++) {
+        promisesArray.push({ data: data[i] });
       }
-    };
+    } else {
+      for (let i = 1; i <= numberOfRequests; i++) {
+        let options = {
+          method: 'get',
+          url: `https://api.unsplash.com/search/photos?query=puppy&page=${i}&per_page=${urlsPerRequest}`,
+          headers: {
+            'Authorization': `Client-ID ${token}`,
+            'Accept-Version': 'v1'
+          }
+        };
 
-    promisesArray.push(axios(options));
-  }
-
-  for (let i = 1; i <= numberOfRequests; i++) {
-    let options = {
-      method: 'get',
-      url: `https://api.unsplash.com/search/photos?query=kitten&page=${i}&per_page=${urlsPerRequest}`,
-      headers: {
-        'Authorization': `Client-ID ${token}`,
-        'Accept-Version': 'v1'
+        promisesArray.push(axios(options));
       }
-    };
 
-    promisesArray.push(axios(options));
+      for (let i = 1; i <= numberOfRequests; i++) {
+        let options = {
+          method: 'get',
+          url: `https://api.unsplash.com/search/photos?query=kitten&page=${i}&per_page=${urlsPerRequest}`,
+          headers: {
+            'Authorization': `Client-ID ${token}`,
+            'Accept-Version': 'v1'
+          }
+        };
+
+        promisesArray.push(axios(options));
+      }
+    }
   }
 
   return Promise.all(promisesArray)
@@ -98,11 +107,11 @@ const groupImageData = (urls, batch) => {
   return batchOfItemObjects;
 };
 
-const insertImages = function (urls, totalNumberOfBatches, actuallyInsert) {
+const insertImages = function (urls, totalNumberOfBatches, actuallyInsert, startingBatch) {
   const dataInsertions = [];
 
   for (let i = 0; i < totalNumberOfBatches; i++) {
-    const batchOfItemObjects = groupImageData(urls, i);
+    const batchOfItemObjects = groupImageData(urls, i + startingBatch);
     if (actuallyInsert) {
       dataInsertions.push(Images.insertRecords(batchOfItemObjects));
     } else {
@@ -113,13 +122,16 @@ const insertImages = function (urls, totalNumberOfBatches, actuallyInsert) {
   return Promise.all(dataInsertions);
 };
 
-const handleSeeding = function(numberOfRequests, urlsPerRequest, totalNumberOfBatches, actuallyInsert) {
-  return getUnsplashImages(numberOfRequests, urlsPerRequest)
+const handleSeeding = function(numberOfRequests, urlsPerRequest, totalNumberOfBatches, actuallyInsert, data, startingBatch) {
+  return getUnsplashImages(numberOfRequests, urlsPerRequest, data)
     .then((urlsArray) => {
-      return insertImages(urlsArray, totalNumberOfBatches, actuallyInsert);
+      return insertImages(urlsArray, totalNumberOfBatches, actuallyInsert, startingBatch);
     })
     .then(() => {
-      connection.end();
+      if (startingBatch === 9990) {
+        connection.end();
+      }
+
     })
     .catch((error) => console.log(error)
     );
