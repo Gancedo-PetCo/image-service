@@ -9,7 +9,7 @@ var connection = mysql.createConnection({
 });
 
 const table = 'CREATE TABLE IF NOT EXISTS SDC_Image_Service_MySQL_10Million.images (itemId VARCHAR(10) NOT NULL UNIQUE PRIMARY KEY, itemImages VARCHAR(90) NOT NULL)';
-const badTable = 'CREATE TABLE IF NOT EXISTS SDC_Image_Service_MySQL_10Million.imagesBad (indexNumber MEDIUMINT NOT NULL UNIQUE PRIMARY KEY AUTO_INCREMENT, itemId VARCHAR(10) NOT NULL, itemImages VARCHAR(90) NOT NULL)';
+const badTable = 'CREATE TABLE IF NOT EXISTS SDC_Image_Service_MySQL_10Million.imagesBad (indexNumber INT NOT NULL UNIQUE PRIMARY KEY AUTO_INCREMENT, itemId VARCHAR(10) NOT NULL, itemImages VARCHAR(90) NOT NULL)';
 
 connection.connect((err) => {
   if (err) {

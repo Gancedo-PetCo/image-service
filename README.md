@@ -89,7 +89,7 @@ Response: The string: Item ${itemId} deleted
 
 ## Working with Riak
 
-Riak, as I discovered after commiting to th DB, was made my company that no longer exists. The tech was bought by another company but, already, i have found some broken links on their website and/or outdated info. Since it is hard to find info on the DB, I have included this section for the steps i folowed to use Riak.
+Riak, as I discovered after commiting to the DB, was made a company that no longer exists. The tech was bought by another company but, already, I have found some broken links on their website and/or outdated info. Since it is hard to find info on the DB, I have included this section for the steps I followed to use Riak.
 
 1. For MacOs, i followed the instructions found here https://docs.riak.com/riak/kv/2.2.3/setup/installing/mac-osx/index.html
 
@@ -103,7 +103,7 @@ I followed the "From Precompiled Tarballs" instructions. Note that I would not r
 
 Once the tarballs are installed, the next set of instructions in the official Riak instructions should NOT BE followed. Those instructions have you firing up your Riak node. However, if you want to rename your Riak node and you already fired up the node, you have to first stop it and then go through a file deletion process before you can actually do so. Very irresponsible to tell you to fire up the Riak node without first warning you certain configuration options are hard to change if you already fired it up. Instead, proceed to Step 5.
 
-5. The Riak folder you should be in your hom directory if you followed all the steps exactly. Officially the folder will be labelled riak-version. For mine, the version was 2.2.3 and so my folder is titled riak-2.2.3. In that folder, you can find the config file at /etc/riak.conf
+5. The Riak folder you should be in your home directory if you followed all the steps exactly. Officially the folder will be labelled riak-version. For mine, the version was 2.2.3 and so my folder is titled riak-2.2.3. In that folder, you can find the config file at /etc/riak.conf
 
 Open this file with a text editor and then make the following changes:
 

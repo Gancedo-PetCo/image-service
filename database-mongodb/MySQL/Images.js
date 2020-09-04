@@ -18,10 +18,10 @@ function insertRecords (records) {
   for (let i = 0; i < records.length; i++) {
     if (i !== 999) {
       insertionsParsedToMySQLSyntax = insertionsParsedToMySQLSyntax + "('" + records[i].itemId + "','" + records[i].itemImages + "'),";
-      insertionsParsedToMySQLSyntaxBad = insertionsParsedToMySQLSyntaxBad + "(NULL,'" + records[i].itemId + "','" + records[i].itemImages + "'),";
+      insertionsParsedToMySQLSyntaxBad = insertionsParsedToMySQLSyntaxBad + "(" + records[i].itemId + ",'" + records[i].itemId + "','" + records[i].itemImages + "'),";
     } else {
       insertionsParsedToMySQLSyntax = insertionsParsedToMySQLSyntax + "('" + records[i].itemId + "','" + records[i].itemImages + "')";
-      insertionsParsedToMySQLSyntaxBad = insertionsParsedToMySQLSyntaxBad + "(" + (Number.parseInt(records[i].itemId, 10) - 100) + ",'" + records[i].itemId + "','" + records[i].itemImages + "')";
+      insertionsParsedToMySQLSyntaxBad = insertionsParsedToMySQLSyntaxBad + "(" + records[i].itemId + ",'" + records[i].itemId + "','" + records[i].itemImages + "')";
     }
 
   }
