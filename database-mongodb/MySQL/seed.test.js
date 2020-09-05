@@ -7,7 +7,7 @@ const {
   getUnsplashImages,
 } = require('./seed.js');
 
-const optionalData = require('../../unsplashData.js');
+const optionalData = require('../unsplashData.js');
 
 const mockResponse1 = {
   data: {

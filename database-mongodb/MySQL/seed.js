@@ -30,7 +30,7 @@ const getUnsplashImages = (numberOfRequests, urlsPerRequest, data) => {
   if (promisesArray.length === 0) {
     if (data) {
       for (let i = 0; i < data.length; i++) {
-        promisesArray.push({ data: data[i] });
+        promisesArray.push(data[i]);
       }
     } else {
       for (let i = 1; i <= numberOfRequests; i++) {

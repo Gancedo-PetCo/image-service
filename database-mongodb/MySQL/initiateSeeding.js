@@ -1,6 +1,6 @@
 const mysql = require('mysql');
 const { mysqlHost, mysqlUser, mysqlPassword } = require('../../config.js');
-const data = require('../../unsplashData.js');
+const data = require('../unsplashData.js');
 
 var connection = mysql.createConnection({
   host: mysqlHost,

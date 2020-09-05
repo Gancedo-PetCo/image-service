@@ -8,6 +8,7 @@
     "start": "node server/start.js",
     "client": "webpack",
     "build_client": "webpack",
+    "preseed" : "node database-mongodb/unsplashAPIcalls.js",
     "seed": "node database-mongodb/initiateSeeding.js",
     "seedMySQL": "node database-mongodb/MySQL/initiateSeeding.js",
     "seedRiak": "node database-mongodb/Riak/initiateSeeding.js"
@@ -39,6 +40,7 @@
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint": "^7.3.0",
     "eslint-config-hackreactor": "github:reactorcore/eslint-config-hackreactor",
+    "fs": "0.0.1-security",
     "jest": "^26.1.0",
     "jest-environment-enzyme": "^7.1.2",
     "jest-enzyme": "^7.1.2",
