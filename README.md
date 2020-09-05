@@ -9,10 +9,10 @@
 
 1. With the app's root directory set to cd in terminal, run >npm install
 2. Make an API account with https://unsplash.com/documentation#creating-a-developer-account
-3. In the app's root folder, there is a file titled "config.example.js". Make a duplicate of this file and rename it to "config.js". Then use the terminal to run >git status. You should not see the new config.js file listed. If you do, then the name of the file is wrong. Once the correct name of the file is confirmed, you can copy your Unsplash API key to the file.
-4. You can now seed the database by running >npm run seed. If you also want to seed MySQL, run >npm run seedMySQL.
+3. In the app's root folder, there is a file titled "config.example.js". Make a duplicate of this file and rename it to "config.js". Then use the terminal to run >git status. You should not see the new config.js file listed. If you do, then the name of the file is wrong. Once the correct name of the file is confirmed, you can copy your Unsplash API key to the file. You can also update the other fields that require an update.
+4. Before seeding the database, you have to run >npm run preseed. This script will make 20 Unsplash API calls (which means you're allotment per hour will be charged 20) and will take some time to complete. Once that script finished running,  you can now seed the database by running >npm run seed. If you also want to seed MySQL, run >npm run seedMySQL. Same for Riak and >npm run Riak. 
 5. Start server with >npm run start
-6. Before running tests, uncomment out lines 50-60 in database-mongo/seed.test.js . These lines are commented out since this test makes an actual call to the Unsplash API. To actually run tests, >npm run test
+6. To run tests, >npm run test
 
 ## CRUD API
 
