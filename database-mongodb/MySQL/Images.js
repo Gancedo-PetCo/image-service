@@ -40,12 +40,25 @@ function deleteRecord (itemId) {
   return Image.findOneAndDelete({ itemId });
 }
 
-function fetchItemImages (itemId) {
-  return Image.findOne({ itemId: itemId }, '-_id -__v');
+function fetchItemImages (itemId, table) {
+  const query = `SELECT itemImages FROM ${table} WHERE itemId = '${itemId}';`;
+  return connection.queryAsync(query);
 }
 
-function fetchMultipleItemImages (itemIds) {
-  return Image.find({ itemId: { $in: itemIds }}).select('-_id -__v').exec();
+function fetchMultipleItemImages (itemIds, table) {
+  let itemIdsCombinedWithMySQLSyntax = "";
+  const itemIdsLength = itemIds.length - 1;
+
+  for (let i = 0; i < itemIds.length; i++) {
+    if (i === itemIdsLength) {
+      itemIdsCombinedWithMySQLSyntax += `'${itemIds[i]}'`;
+    } else {
+      itemIdsCombinedWithMySQLSyntax += `'${itemIds[i]}',`;
+    }
+  }
+
+  const query = `SELECT itemImages FROM ${table} WHERE itemId IN (${itemIdsCombinedWithMySQLSyntax});`;
+  return connection.queryAsync(query);
 }
 
 function fetchAll() {
