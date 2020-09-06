@@ -1,6 +1,5 @@
 const connection = require('./connect.js');
 const { promisifyAll } = require('bluebird');
-
 promisifyAll(connection);
 
 connection.connect((err) => {
@@ -84,3 +83,4 @@ module.exports.fetchItemImages = fetchItemImages;
 module.exports.fetchMultipleItemImages =fetchMultipleItemImages;
 module.exports.fetchAll = fetchAll;
 module.exports.deleteAll = deleteAll;
+module.exports.connection = connection;
