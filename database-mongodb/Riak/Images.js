@@ -53,3 +53,4 @@ module.exports.fetchItemImages = fetchItemImages;
 module.exports.fetchMultipleItemImages =fetchMultipleItemImages;
 module.exports.fetchAll = fetchAll;
 module.exports.deleteAll = deleteAll;
+module.exports.client = client;
