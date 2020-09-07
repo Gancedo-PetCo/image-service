@@ -1,10 +1,10 @@
 const { fetchItemImages, fetchMultipleItemImages, connection } = require('./Images.js');
 
 const numberOfRandomQueries = 250;
-const goodQueryTime = 100;
-const goodWaitTime = goodQueryTime + 50;
-const badQueryTime = 4000;
-const badWaitTime = badQueryTime + 1000;
+// const mode = 'async';
+// const requestDelay = 0;
+const mode = 'sync';
+const requestDelay = 5;
 
 const singleItemData = [];
 const generateSingleItemData = function () {
@@ -49,144 +49,287 @@ const generateArrayItemData = function () {
     count--;
   }
 };
-
-const allCallsCompletionCheck = [];
-const checkAllCallsComplete = function(promiseArray, message) {
-  if (promiseArray.length === numberOfRandomQueries) {
-    Promise.all(promiseArray)
-      .then(() => {
-        allCallsCompletionCheck.push(message);
-        console.log(message);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  } else {
-    setTimeout(checkAllCallsComplete.bind(null, promiseArray, message), 1000);
-  }
+const extractSingleItem = function(response) {
+  return response[0].itemImages;
 };
 
-const makeActualCall = function(i, promiseArray, dataArray, queryTimeArray, queryHandler, data, database) {
+const extractMultipleItems = function(response) {
+  const result = [];
+  for (let i = 0; i < response.length; i++) {
+    result.push(response[i].itemImages);
+  }
+  return result;
+};
+
+const makeActualCall = function(i, dataArray, queryTimeArray, queryHandler, dataSource, database, extractFunction) {
   queryTimeArray[i] = [new Date().getTime()];
-  promiseArray.push(queryHandler(data, database)
+  queryHandler(dataSource[i], database)
     .then((response) => {
-      dataArray.push(response[0].itemImages);
+      dataArray.push(extractFunction(response));
       queryTimeArray[i][1] = new Date().getTime();
+      if (i < numberOfRandomQueries - 1) {
+        setTimeout(
+          makeActualCall.bind(
+            null,
+            i + 1,
+            dataArray,
+            queryTimeArray,
+            fetchItemImages,
+            dataSource,
+            database,
+            extractFunction
+          ),
+          10
+        );
+      } else {
+        handleTests();
+      }
     })
     .catch((err) => {
       console.log(err);
-    }));
+    });
 };
 
-const singleItemRequestPromises = [];
+const makeActualCallSync = function(i, dataArray, queryTimeArray, queryHandler, data, database, extractFunction) {
+  queryTimeArray[i] = [new Date().getTime()];
+  queryHandler(data, database)
+    .then((response) => {
+      dataArray.push(extractFunction(response));
+      queryTimeArray[i][1] = new Date().getTime();
+      if (i === numberOfRandomQueries - 1) {
+        handleTests();
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+
 const singleItemResponseData = [];
 const singleItemResponseQueryTimes = [];
 const testMySQLImagesSingle = function() {
   console.log('singleGood started');
-  for (let i = 0; i < singleItemData.length; i++) {
-    setTimeout(makeActualCall.bind(null, i, singleItemRequestPromises, singleItemResponseData, singleItemResponseQueryTimes, fetchItemImages, singleItemData[i], 'images'), i * goodQueryTime);
-  }
-  setTimeout(checkAllCallsComplete.bind(null, singleItemRequestPromises, 'singleGood calls complete'), goodQueryTime * numberOfRandomQueries + 100);
+
+  setTimeout(
+    makeActualCall.bind(
+      null,
+      0,
+      singleItemResponseData,
+      singleItemResponseQueryTimes,
+      fetchItemImages,
+      singleItemData,
+      'images',
+      extractSingleItem
+    ),
+    10
+  );
 };
 
-const multiItemRequestPromises = [];
+const testMySQLImagesSingleSync = function() {
+  console.log('singleGood started');
+  for (let i = 0; i < singleItemData.length; i++) {
+    setTimeout(
+      makeActualCallSync.bind(
+        null,
+        i,
+        singleItemResponseData,
+        singleItemResponseQueryTimes,
+        fetchItemImages,
+        singleItemData[i],
+        'images',
+        extractSingleItem
+      ),
+      requestDelay * i
+    );
+  }
+};
+
 const multiItemResponseData = [];
 const multiItemResponseQueryTimes = [];
 const testMySQLImagesMulti = function() {
   console.log('multiGood started');
-  for (let i = 0; i < arrayItemData.length; i++) {
-    setTimeout(makeActualCall.bind(null, i, multiItemRequestPromises, multiItemResponseData, multiItemResponseQueryTimes, fetchMultipleItemImages, arrayItemData[i], 'images'), i * goodQueryTime);
-  }
-  setTimeout(checkAllCallsComplete.bind(null, multiItemRequestPromises, 'multiGood calls complete'), goodQueryTime * numberOfRandomQueries + 100);
+
+  setTimeout(
+    makeActualCall.bind(
+      null,
+      0,
+      multiItemResponseData,
+      multiItemResponseQueryTimes,
+      fetchMultipleItemImages,
+      arrayItemData,
+      'images',
+      extractMultipleItems
+    ),
+    10
+  );
 };
 
-const singleItemRequestPromisesBad = [];
+const testMySQLImagesMultiSync = function() {
+  console.log('multiGood started');
+  for (let i = 0; i < arrayItemData.length; i++) {
+    setTimeout(
+      makeActualCallSync.bind(
+        null,
+        i,
+        multiItemResponseData,
+        multiItemResponseQueryTimes,
+        fetchMultipleItemImages,
+        arrayItemData[i],
+        'images',
+        extractMultipleItems
+      ),
+      requestDelay * i
+    );
+  }
+};
+
 const singleItemResponseDataBad = [];
 const singleItemResponseQueryTimesBad = [];
 const testMySQLImagesSingleBad = function() {
   console.log('singleBad started');
-  for (let i = 0; i < singleItemData.length; i++) {
-    setTimeout(makeActualCall.bind(null, i, singleItemRequestPromisesBad, singleItemResponseDataBad, singleItemResponseQueryTimesBad, fetchItemImages, singleItemData[i], 'imagesBad'), i * badQueryTime);
-  }
-  setTimeout(checkAllCallsComplete.bind(null, singleItemRequestPromisesBad, 'singleBad calls complete'), badQueryTime * numberOfRandomQueries + 1000);
+
+  setTimeout(
+    makeActualCall.bind(
+      null,
+      0,
+      singleItemResponseDataBad,
+      singleItemResponseQueryTimesBad,
+      fetchItemImages,
+      singleItemData,
+      'imagesBad',
+      extractSingleItem
+    ),
+    10
+  );
 };
 
-const multiItemRequestPromisesBad = [];
+const testMySQLImagesSingleBadSync = function() {
+  console.log('singleBad started');
+  for (let i = 0; i < singleItemData.length; i++) {
+    setTimeout(
+      makeActualCallSync.bind(
+        null,
+        i,
+        singleItemResponseDataBad,
+        singleItemResponseQueryTimesBad,
+        fetchItemImages,
+        singleItemData[i],
+        'imagesBad',
+        extractSingleItem
+      ),
+      requestDelay * i
+    );
+  }
+};
+
 const multiItemResponseDataBad = [];
 const multiItemResponseQueryTimesBad = [];
 const testMySQLImagesMultiBad = function() {
   console.log('multiBad started');
+
+  setTimeout(
+    makeActualCall.bind(
+      null,
+      0,
+      multiItemResponseDataBad,
+      multiItemResponseQueryTimesBad,
+      fetchMultipleItemImages,
+      arrayItemData,
+      'imagesBad',
+      extractMultipleItems
+    ),
+    10
+  );
+};
+
+const testMySQLImagesMultiBadSync = function() {
+  console.log('multiBad started');
   for (let i = 0; i < arrayItemData.length; i++) {
-    setTimeout(makeActualCall.bind(null, i, multiItemRequestPromisesBad, multiItemResponseDataBad, multiItemResponseQueryTimesBad, fetchMultipleItemImages, arrayItemData[i], 'imagesBad'), i * badQueryTime);
+    setTimeout(
+      makeActualCallSync.bind(
+        null,
+        i,
+        multiItemResponseDataBad,
+        multiItemResponseQueryTimesBad,
+        fetchMultipleItemImages,
+        arrayItemData[i],
+        'imagesBad',
+        extractMultipleItems
+      ),
+      requestDelay * i
+    );
   }
-  setTimeout(checkAllCallsComplete.bind(null, multiItemRequestPromisesBad, 'multiBad calls complete'), badQueryTime * numberOfRandomQueries + 1000);
 };
 
 const analyzeResults = function() {
-  if (allCallsCompletionCheck.length === 4) {
-    let accumulatedSingleItemQueryTime = 0;
-    for (let i = 0; i < singleItemResponseQueryTimes.length; i++) {
-      const difference = singleItemResponseQueryTimes[i][1] - singleItemResponseQueryTimes[i][0];
-      accumulatedSingleItemQueryTime += difference;
-    }
-
-    let accumulatedMultiItemQueryTime = 0;
-    for (let i = 0; i < multiItemResponseQueryTimes.length; i++) {
-      const difference = multiItemResponseQueryTimes[i][1] - multiItemResponseQueryTimes[i][0];
-      accumulatedMultiItemQueryTime += difference;
-    }
-
-    let accumulatedSingleItemQueryTimeBad = 0;
-    for (let i = 0; i < singleItemResponseQueryTimesBad.length; i++) {
-      const difference = singleItemResponseQueryTimesBad[i][1] - singleItemResponseQueryTimesBad[i][0];
-      accumulatedSingleItemQueryTimeBad += difference;
-    }
-
-    let accumulatedMultiItemQueryTimeBad = 0;
-    for (let i = 0; i < multiItemResponseQueryTimesBad.length; i++) {
-      const difference = multiItemResponseQueryTimesBad[i][1] - multiItemResponseQueryTimesBad[i][0];
-      accumulatedMultiItemQueryTimeBad += difference;
-    }
-    console.log(`
-
-
-
-
-    `);
-
-    const averageSingleGoodQueryTime = accumulatedSingleItemQueryTime / numberOfRandomQueries;
-    console.log(`Average good MySQL query time for ${numberOfRandomQueries} queries and a single ItemID lookup is ${averageSingleGoodQueryTime} ms`);
-
-    const averageMultiGoodQueryTime = accumulatedMultiItemQueryTime / numberOfRandomQueries;
-    console.log(`Average good MySQL query time for ${numberOfRandomQueries} queries and an array of ItemIDs is ${averageMultiGoodQueryTime} ms`);
-
-    const averageBadGoodQueryTime = accumulatedSingleItemQueryTimeBad / numberOfRandomQueries;
-    console.log(`Average bad MySQL query time for ${numberOfRandomQueries} queries and a single ItemID lookup is ${averageBadGoodQueryTime} ms`);
-
-    const averageMultiBadQueryTime = accumulatedMultiItemQueryTimeBad / numberOfRandomQueries;
-    console.log(`Average bad MySQL query time for ${numberOfRandomQueries} queries and an array ItemID is ${averageMultiBadQueryTime} ms`);
-
-    connection.end();
-  } else {
-    setTimeout(analyzeResults, 10000);
+  let accumulatedSingleItemQueryTime = 0;
+  for (let i = 0; i < singleItemResponseQueryTimes.length; i++) {
+    const difference = singleItemResponseQueryTimes[i][1] - singleItemResponseQueryTimes[i][0];
+    accumulatedSingleItemQueryTime += difference;
   }
+
+  let accumulatedMultiItemQueryTime = 0;
+  for (let i = 0; i < multiItemResponseQueryTimes.length; i++) {
+    const difference = multiItemResponseQueryTimes[i][1] - multiItemResponseQueryTimes[i][0];
+    accumulatedMultiItemQueryTime += difference;
+  }
+
+  let accumulatedSingleItemQueryTimeBad = 0;
+  for (let i = 0; i < singleItemResponseQueryTimesBad.length; i++) {
+    const difference = singleItemResponseQueryTimesBad[i][1] - singleItemResponseQueryTimesBad[i][0];
+    accumulatedSingleItemQueryTimeBad += difference;
+  }
+
+  let accumulatedMultiItemQueryTimeBad = 0;
+  for (let i = 0; i < multiItemResponseQueryTimesBad.length; i++) {
+    const difference = multiItemResponseQueryTimesBad[i][1] - multiItemResponseQueryTimesBad[i][0];
+    accumulatedMultiItemQueryTimeBad += difference;
+  }
+  console.log(`
+
+
+  `);
+
+  let stringInsert = '';
+
+  if (requestDelay > 0) {
+    stringInsert = `, a ${requestDelay} ms delay,`;
+  }
+
+  const averageSingleGoodQueryTime = accumulatedSingleItemQueryTime / numberOfRandomQueries;
+  console.log(`Average good MySQL query time for ${numberOfRandomQueries} queries${stringInsert} and a single ItemID lookup is ${averageSingleGoodQueryTime} ms`);
+
+  const averageMultiGoodQueryTime = accumulatedMultiItemQueryTime / numberOfRandomQueries;
+  console.log(`Average good MySQL query time for ${numberOfRandomQueries} queries${stringInsert} and an array of ItemIDs is ${averageMultiGoodQueryTime} ms`);
+
+  const averageBadGoodQueryTime = accumulatedSingleItemQueryTimeBad / numberOfRandomQueries;
+  console.log(`Average bad MySQL query time for ${numberOfRandomQueries} queries${stringInsert} and a single ItemID lookup is ${averageBadGoodQueryTime} ms`);
+
+  const averageMultiBadQueryTime = accumulatedMultiItemQueryTimeBad / numberOfRandomQueries;
+  console.log(`Average bad MySQL query time for ${numberOfRandomQueries} queries${stringInsert} and an array of ItemIDs is ${averageMultiBadQueryTime} ms`);
+
+  connection.end();
+
 };
 
+const tests = [testMySQLImagesMultiBad, testMySQLImagesSingleBad, testMySQLImagesMulti, testMySQLImagesSingle];
+const testsSync = [testMySQLImagesMultiBadSync, testMySQLImagesSingleBadSync, testMySQLImagesMultiSync, testMySQLImagesSingleSync];
 const handleTests = function() {
-  let queryTime = 10000;
-  setTimeout(testMySQLImagesSingle, queryTime);
+  let testSuite;
+  if (mode === 'async') {
+    testSuite = tests;
+  } else {
+    testSuite = testsSync;
+  }
 
-  queryTime += goodWaitTime * numberOfRandomQueries + 5000;
-  setTimeout(testMySQLImagesMulti, queryTime);
+  const nextTest = testSuite.pop();
 
-  queryTime += goodWaitTime * numberOfRandomQueries + 5000;
-  setTimeout(testMySQLImagesSingleBad, queryTime);
-
-  queryTime += badWaitTime * numberOfRandomQueries + 10000;
-  setTimeout(testMySQLImagesMultiBad, queryTime);
-
-  queryTime += badWaitTime * numberOfRandomQueries + 10000;
-  setTimeout(analyzeResults, queryTime);
+  if (nextTest) {
+    setTimeout(nextTest, 1000);
+  } else {
+    setTimeout(analyzeResults, 1000);
+  }
 };
 
 generateSingleItemData();
