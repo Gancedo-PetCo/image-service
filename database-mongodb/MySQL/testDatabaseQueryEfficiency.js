@@ -1,10 +1,9 @@
 const { fetchItemImages, fetchMultipleItemImages, connection } = require('./Images.js');
 
-const numberOfRandomQueries = 250;
-// const mode = 'async';
-// const requestDelay = 0;
-const mode = 'sync';
-const requestDelay = 5;
+const numberOfRandomQueries = 150;
+const mode = 'async';
+// const mode = 'sync';
+// const requestDelay = 10;
 
 const singleItemData = [];
 const generateSingleItemData = function () {
@@ -49,6 +48,7 @@ const generateArrayItemData = function () {
     count--;
   }
 };
+
 const extractSingleItem = function(response) {
   return response[0].itemImages;
 };
@@ -74,7 +74,7 @@ const makeActualCall = function(i, dataArray, queryTimeArray, queryHandler, data
             i + 1,
             dataArray,
             queryTimeArray,
-            fetchItemImages,
+            queryHandler,
             dataSource,
             database,
             extractFunction
@@ -286,6 +286,7 @@ const analyzeResults = function() {
     const difference = multiItemResponseQueryTimesBad[i][1] - multiItemResponseQueryTimesBad[i][0];
     accumulatedMultiItemQueryTimeBad += difference;
   }
+
   console.log(`
 
 
@@ -293,7 +294,7 @@ const analyzeResults = function() {
 
   let stringInsert = '';
 
-  if (requestDelay > 0) {
+  if (mode === 'sync') {
     stringInsert = `, a ${requestDelay} ms delay,`;
   }
 
