@@ -29,7 +29,6 @@ function fetchItemImages (itemId) {
 
 function fetchMultipleItemImages (itemIds) {
   const promisesArray = [];
-
   for (let i = 0; i < itemIds.length; i++) {
     promisesArray.push(client.fetchValueAsync({ key: itemIds[i], bucket: 'itemImages'}));
   }
