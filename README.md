@@ -9,10 +9,10 @@
 
 1. With the app's root directory set to cd in terminal, run >npm install
 2. Make an API account with https://unsplash.com/documentation#creating-a-developer-account
-3. In the app's root folder, there is a file titled "config.example.js". Make a duplicate of this file and rename it to "config.js". Then use the terminal to run >git status. You should not see the new config.js file listed. If you do, then the name of the file is wrong. Once the correct name of the file is confirmed, you can copy your Unsplash API key to the file.
-4. You can now seed the database by running >npm run seed. If you also want to seed MySQL, run >npm run seedMySQL.
+3. In the app's root folder, there is a file titled "config.example.js". Make a duplicate of this file and rename it to "config.js". Then use the terminal to run >git status. You should not see the new config.js file listed. If you do, then the name of the file is wrong. Once the correct name of the file is confirmed, you can copy your Unsplash API key to the file. You can also update the other fields that require an update.
+4. Before seeding the database, you have to run >npm run preseed. This script will make 20 Unsplash API calls (which means you're allotment per hour will be charged 20)  and may take some time to complete since the next call is not made until the previous call completes. Once that script finishes running,  you can now seed the database by running >npm run seed. If you also want to seed MySQL, run >npm run seedMySQL. Same for Riak and >npm run Riak. 
 5. Start server with >npm run start
-6. Before running tests, uncomment out lines 50-60 in database-mongo/seed.test.js . These lines are commented out since this test makes an actual call to the Unsplash API. To actually run tests, >npm run test
+6. To run tests, >npm run test
 
 ## CRUD API
 
@@ -89,7 +89,7 @@ Response: The string: Item ${itemId} deleted
 
 ## Working with Riak
 
-Riak, as I discovered after commiting to th DB, was made my company that no longer exists. The tech was bought by another company but, already, i have found some broken links on their website and/or outdated info. Since it is hard to find info on the DB, I have included this section for the steps i folowed to use Riak.
+Riak, as I discovered after commiting to the DB, was made a company that no longer exists. The tech was bought by another company but, already, I have found some broken links on their website and/or outdated info. Since it is hard to find info on the DB, I have included this section for the steps I followed to use Riak.
 
 1. For MacOs, i followed the instructions found here https://docs.riak.com/riak/kv/2.2.3/setup/installing/mac-osx/index.html
 
@@ -103,7 +103,7 @@ I followed the "From Precompiled Tarballs" instructions. Note that I would not r
 
 Once the tarballs are installed, the next set of instructions in the official Riak instructions should NOT BE followed. Those instructions have you firing up your Riak node. However, if you want to rename your Riak node and you already fired up the node, you have to first stop it and then go through a file deletion process before you can actually do so. Very irresponsible to tell you to fire up the Riak node without first warning you certain configuration options are hard to change if you already fired it up. Instead, proceed to Step 5.
 
-5. The Riak folder you should be in your hom directory if you followed all the steps exactly. Officially the folder will be labelled riak-version. For mine, the version was 2.2.3 and so my folder is titled riak-2.2.3. In that folder, you can find the config file at /etc/riak.conf
+5. The Riak folder you should be in your home directory if you followed all the steps exactly. Officially the folder will be labelled riak-version. For mine, the version was 2.2.3 and so my folder is titled riak-2.2.3. In that folder, you can find the config file at /etc/riak.conf
 
 Open this file with a text editor and then make the following changes:
 
