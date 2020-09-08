@@ -1,15 +1,19 @@
 const { fetchItemImages, fetchMultipleItemImages, client } = require('./Images.js');
 
-//Before testing, make sure to clear database cache.
+//Before testing, make sure to clear database cache and select a mode.
 //Async and sync mode are defined as:
 //Async means a call completes before the next call completes, isolating each call from each other
 //Sync means calls are made one after the other based in the requestDelay, which is in milliseconds
 //In both cases, the individual test functions (called by handleTests) are called independent
 //of each other and so no calls between tests interfere with each other
+//For sync mode, requestDelay also has to be uncommented
+//The last mode is 'test' mode, which should be seleced when running this repo's
+//unit tests with the commmand >npm run test
 const numberOfRandomQueries = 150;
-const mode = 'async';
+// const mode = 'async';
 // const mode = 'sync';
 // const requestDelay = 2;
+const mode = 'test';
 
 const singleItemData = [];
 const generateSingleItemData = function () {
@@ -224,8 +228,10 @@ const handleTests = function() {
   let testSuite;
   if (mode === 'async') {
     testSuite = tests;
-  } else {
+  } else if (mode === 'sync') {
     testSuite = testsSync;
+  } else {
+    return;
   }
 
   const nextTest = testSuite.pop();
@@ -240,3 +246,21 @@ const handleTests = function() {
 generateSingleItemData();
 generateArrayItemData();
 handleTests();
+
+module.exports.singleItemData = singleItemData;
+module.exports.generateSingleItemData = generateSingleItemData;
+module.exports.arrayItemData = arrayItemData;
+module.exports.generateArrayItemData = generateArrayItemData;
+module.exports.extractSingleItem = extractSingleItem;
+module.exports.makeActualCall = makeActualCall;
+module.exports.makeActualCallSync = makeActualCallSync;
+module.exports.singleItemResponseData = singleItemResponseData;
+module.exports.singleItemResponseQueryTimes = singleItemResponseQueryTimes;
+module.exports.testMySQLImagesSingle = testMySQLImagesSingle;
+module.exports.testMySQLImagesSingleSync = testMySQLImagesSingleSync;
+module.exports.multiItemResponseData = multiItemResponseData;
+module.exports.multiItemResponseQueryTimes = multiItemResponseQueryTimes;
+module.exports.testMySQLImagesMulti = testMySQLImagesMulti;
+module.exports.testMySQLImagesMultiSync = testMySQLImagesMultiSync;
+module.exports.analyzeResults = analyzeResults;
+module.exports.handleTests = handleTests;
