@@ -47,8 +47,4 @@ const getUnsplashImages = (pageNumber, urlsPerRequest, query) => {
     });
 };
 
-const initiateUnsplashAPICall = function(pageNumber, urlsPerRequest, query) {
-  setTimeout(getUnsplashImages.bind(this, pageNumber, urlsPerRequest, query), 2000);
-};
-
-initiateUnsplashAPICall(1, 25, 'puppy');
+initiateUnsgetUnsplashImagesplashAPICall(1, 25, 'puppy');
