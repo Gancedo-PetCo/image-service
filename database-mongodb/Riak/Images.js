@@ -10,17 +10,16 @@ function insertRecords (records) {
   return Promise.all(insertions);
 }
 
-function insertRecord (record) {
-  const newRecord = new Image(record);
-  return newRecord.save();
+function insertRecord (itemId, itemImages) {
+  return client.storeValueAsync({ key: itemId, bucket: 'itemImages', value: itemImages });
 }
 
-function updateRecord (record) {
-  return Image.findOneAndUpdate({ itemId: record.itemId }, record);
+function updateRecord (itemId, itemImages) {
+  return client.storeValueAsync({ key: itemId, bucket: 'itemImages', value: itemImages });
 }
 
 function deleteRecord (itemId) {
-  return Image.findOneAndDelete({ itemId });
+  return client.deleteValueAsync({ key: itemId, bucket: 'itemImages' });
 }
 
 function fetchItemImages (itemId) {

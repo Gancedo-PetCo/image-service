@@ -25,25 +25,27 @@ function insertRecords (records) {
 
   }
   const queryPairs = [];
-  const query = `INSERT INTO images (itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntax}`;
-  const queryTwo = `INSERT INTO imagesBad (indexNumber,itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntaxBad}`;
+  const query = `INSERT INTO images (itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntax};`;
+  const queryTwo = `INSERT INTO imagesBad (indexNumber,itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntaxBad};`;
 
   queryPairs.push(connection.queryAsync(query));
   queryPairs.push(connection.queryAsync(queryTwo));
   return Promise.all(queryPairs);
 }
 
-function insertRecord (record) {
-  const newRecord = new Image(record);
-  return newRecord.save();
+function insertRecord (itemId, table, itemImages) {
+  const query = `INSERT INTO ${table} (itemId,itemImages) VALUES ('${itemId}','${itemImages}');`;
+  return connection.queryAsync(query);
 }
 
-function updateRecord (record) {
-  return Image.findOneAndUpdate({ itemId: record.itemId }, record);
+function updateRecord (itemId, table, itemImages) {
+  const query = `UPDATE ${table} SET itemImages = '${itemImages}' WHERE itemId = '${itemId}';`;
+  return connection.queryAsync(query);
 }
 
-function deleteRecord (itemId) {
-  return Image.findOneAndDelete({ itemId });
+function deleteRecord (itemId, table) {
+  const query = `DELETE FROM ${table} WHERE itemId = '${itemId}';`;
+  return connection.queryAsync(query);
 }
 
 function fetchItemImages (itemId, table) {

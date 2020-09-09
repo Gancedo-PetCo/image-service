@@ -11,7 +11,9 @@
     "preseed" : "node database-mongodb/unsplashAPIcalls.js",
     "seed": "node database-mongodb/initiateSeeding.js",
     "seedMySQL": "node database-mongodb/MySQL/initiateSeeding.js",
-    "seedRiak": "node database-mongodb/Riak/initiateSeeding.js"
+    "seedRiak": "node database-mongodb/Riak/initiateSeeding.js",
+    "dbCompareMySQL": "node database-mongodb/MySQL/testDatabaseQueryEfficiency.js",
+    "dbCompareRiak": "node database-mongodb/Riak/testDatabaseQueryEfficiency.js"
   },
   "author": "",
   "license": "ISC",
