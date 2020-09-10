@@ -3,21 +3,21 @@ const {
   arrayItemData,
   singleItemResponseData,
   singleItemResponseQueryTimes,
-  testMySQLImagesSingle,
-  testMySQLImagesSingleSync,
+  testRiakImagesSingle,
+  testRiakImagesSingleSync,
   multiItemResponseData,
   multiItemResponseQueryTimes,
-  testMySQLImagesMulti,
-  testMySQLImagesMultiSync,
+  testRiakImagesMulti,
+  testRiakImagesMultiSync,
   createResponseData,
   createResponseQueryTimes,
-  testMySQLCreate,
+  testRiakCreate,
   updateResponseData,
   updateResponseQueryTimes,
-  testMySQLUpdate,
+  testRiakUpdate,
   deleteResponseData,
   deleteResponseQueryTimes,
-  testMySQLDelete,
+  testRiakDelete,
   newItemIds,
   newItemData
 } = require('./testDatabaseQueryEfficiency.js');
@@ -45,7 +45,8 @@ while (fakeArrayItemData.length < 150) {
 
 const mockSingleItemQueryHandler = function(itemId) {
   const promiseResponse = new Promise ((resolve) => {
-    const response = [{ itemImages: `${itemId} processed` }];
+    const buffer = Buffer.from(`${itemId} processed`, 'utf8');
+    const response = { values: [{ value: buffer }] };
     setTimeout(() => { resolve(response); }, 1);
   });
 
@@ -56,7 +57,9 @@ const mockMultiItemQueryHandler = function(itemIds) {
   const promiseResponse = new Promise ((resolve) => {
     const arrayOfItemIds = [];
     for (let i = 0; i < itemIds.length; i++) {
-      arrayOfItemIds.push({ itemImages: `${itemIds[i]} processed` });
+      const buffer = Buffer.from(`${itemIds[i]} processed`, 'utf8');
+      const response = { values: [{ value: buffer }] };
+      arrayOfItemIds.push(response);
     }
     setTimeout(() => { resolve(arrayOfItemIds); }, 1);
   });
@@ -64,19 +67,17 @@ const mockMultiItemQueryHandler = function(itemIds) {
   return promiseResponse;
 };
 
-const mockCreateAndDeleteQueryHandler = function() {
+const mockCreateAndUpdateQueryHandler = function() {
   const promiseResponse = new Promise ((resolve) => {
-    const response = { affectedRows: 1 };
-    setTimeout(() => { resolve(response); }, 1);
+    setTimeout(() => { resolve({ generatedKey: null }); }, 1);
   });
 
   return promiseResponse;
 };
 
-const mockUpdateQueryHandler = function() {
+const mockDeleteQueryHandler = function() {
   const promiseResponse = new Promise ((resolve) => {
-    const response = { changedRows: 1 };
-    setTimeout(() => { resolve(response); }, 1);
+    setTimeout(() => { resolve(true); }, 1);
   });
 
   return promiseResponse;
@@ -181,13 +182,13 @@ describe('The testDatabaseQueryEfficiency.js script', () => {
     });
   });
 
-  describe('has a function testMySQLImagesSingle that', () => {
+  describe('has a function testRiakImagesSingle that', () => {
     const comparisonTimeStamp = new Date().getTime();
     describe('should, when called, fill singleItemResponseData with' , () => {
       test('150 strings', (done) => {
         singleItemResponseData.splice(0, 150);
         singleItemResponseQueryTimes.splice(0, 150);
-        testMySQLImagesSingle(mockSingleItemQueryHandler);
+        testRiakImagesSingle(mockSingleItemQueryHandler);
         const tests = () => {
           if (singleItemResponseData.length === 150) {
             for (let i = 0; i < singleItemResponseData.length; i++) {
@@ -260,13 +261,13 @@ describe('The testDatabaseQueryEfficiency.js script', () => {
     });
   });
 
-  describe('has a function testMySQLImagesMulti that', () => {
+  describe('has a function testRiakImagesMulti that', () => {
     const comparisonTimeStamp = new Date().getTime();
     describe('should, when called, fill multiItemResponseData with' , () => {
       test('150 arrays that, are themselves, contain 15 strings', (done) => {
         multiItemResponseData.splice(0, 150);
         multiItemResponseQueryTimes.splice(0, 150);
-        testMySQLImagesMulti(mockMultiItemQueryHandler);
+        testRiakImagesMulti(mockMultiItemQueryHandler);
         const tests = () => {
           if (multiItemResponseData.length === 150) {
             for (let i = 0; i < multiItemResponseData.length; i++) {
@@ -347,17 +348,17 @@ describe('The testDatabaseQueryEfficiency.js script', () => {
     });
   });
 
-  describe('has a function testMySQLCreate that', () => {
+  describe('has a function testRiakCreate that', () => {
     const comparisonTimeStamp = new Date().getTime();
     describe('should, when called, fill createResponseData with' , () => {
-      test('the number 1, 150 times', (done) => {
+      test('null, 150 times', (done) => {
         createResponseData.splice(0, 150);
         createResponseQueryTimes.splice(0, 150);
-        testMySQLCreate(mockCreateAndDeleteQueryHandler);
+        testRiakCreate(mockCreateAndUpdateQueryHandler);
         const tests = () => {
           if (createResponseData.length === 150) {
             for (let i = 0; i < createResponseData.length; i++) {
-              expect(createResponseData[i]).toBe(1);
+              expect(createResponseData[i]).toBe(null);
             }
 
             expect(createResponseData).toHaveLength(150);
@@ -408,17 +409,17 @@ describe('The testDatabaseQueryEfficiency.js script', () => {
     });
   });
 
-  describe('has a function testMySQLUpdate that', () => {
+  describe('has a function testRiakUpdate that', () => {
     const comparisonTimeStamp = new Date().getTime();
     describe('should, when called, fill updateResponseData with' , () => {
-      test('the number 1, 150 times', (done) => {
+      test('null, 150 times', (done) => {
         updateResponseData.splice(0, 150);
         updateResponseQueryTimes.splice(0, 150);
-        testMySQLUpdate(mockSingleItemQueryHandler, mockUpdateQueryHandler);
+        testRiakUpdate(mockSingleItemQueryHandler, mockCreateAndUpdateQueryHandler);
         const tests = () => {
           if (updateResponseData.length === 150) {
             for (let i = 0; i < updateResponseData.length; i++) {
-              expect(updateResponseData[i]).toBe(1);
+              expect(updateResponseData[i]).toBe(null);
             }
 
             expect(updateResponseData).toHaveLength(150);
@@ -469,17 +470,17 @@ describe('The testDatabaseQueryEfficiency.js script', () => {
     });
   });
 
-  describe('has a function testMySQLDelete that', () => {
+  describe('has a function testRiakDelete that', () => {
     const comparisonTimeStamp = new Date().getTime();
     describe('should, when called, fill deleteResponseData with' , () => {
-      test('the number 1, 150 times', (done) => {
+      test('true, 150 times', (done) => {
         deleteResponseData.splice(0, 150);
         deleteResponseQueryTimes.splice(0, 150);
-        testMySQLDelete(mockCreateAndDeleteQueryHandler);
+        testRiakDelete(mockDeleteQueryHandler);
         const tests = () => {
           if (deleteResponseData.length === 150) {
             for (let i = 0; i < deleteResponseData.length; i++) {
-              expect(deleteResponseData[i]).toBe(1);
+              expect(deleteResponseData[i]).toBe(true);
             }
 
             expect(deleteResponseData).toHaveLength(150);
@@ -530,13 +531,13 @@ describe('The testDatabaseQueryEfficiency.js script', () => {
     });
   });
 
-  describe('has a function testMySQLImagesSingleSync that', () => {
+  describe('has a function testRiakImagesSingleSync that', () => {
     const comparisonTimeStamp = new Date().getTime();
     describe('should, when called, fill singleItemResponseData with' , () => {
       test('150 strings', (done) => {
         singleItemResponseData.splice(0, 150);
         singleItemResponseQueryTimes.splice(0, 150);
-        testMySQLImagesSingleSync(mockSingleItemQueryHandler);
+        testRiakImagesSingleSync(mockSingleItemQueryHandler);
         const tests = () => {
           if (singleItemResponseData.length === 150) {
             for (let i = 0; i < singleItemResponseData.length; i++) {
@@ -609,13 +610,13 @@ describe('The testDatabaseQueryEfficiency.js script', () => {
     });
   });
 
-  describe('has a function testMySQLImagesMultiSync that', () => {
+  describe('has a function testRiakImagesMultiSync that', () => {
     const comparisonTimeStamp = new Date().getTime();
     describe('should, when called, fill multiItemResponseData with' , () => {
       test('150 arrays that, are themselves, contain 15 strings', (done) => {
         multiItemResponseData.splice(0, 150);
         multiItemResponseQueryTimes.splice(0, 150);
-        testMySQLImagesMultiSync(mockMultiItemQueryHandler);
+        testRiakImagesMultiSync(mockMultiItemQueryHandler);
         const tests = () => {
           if (multiItemResponseData.length === 150) {
             for (let i = 0; i < multiItemResponseData.length; i++) {

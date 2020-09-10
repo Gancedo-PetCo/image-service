@@ -1,11 +1,9 @@
-const {
-  fetchItemImages,
-  fetchMultipleItemImages,
-  connection,
-  insertRecord,
-  updateRecord,
-  deleteRecord
-} = require('./Images.js');
+let fetchItemImages;
+let fetchMultipleItemImages;
+let connection;
+let insertRecord;
+let updateRecord;
+let deleteRecord;
 
 //Before testing async or sync mode, make sure to clear database cache and select a mode.
 //Async and sync mode are defined as:
@@ -17,10 +15,21 @@ const {
 //The last mode is 'test' mode, which should be selected when running this repo's
 //unit tests with the commmand >npm run test
 const numberOfRandomQueries = 150;
-const mode = 'async';
+// const mode = 'async';
 // const mode = 'sync';
-// const requestDelay = 0; //requestDelay should be 0 in 'test' mode and greater than 0 for 'sync' mode
-// const mode = 'test';
+const requestDelay = 2; //requestDelay should be 2 in 'test' mode and greater than 0 for 'sync' mode
+const mode = 'test';
+
+if (mode === 'async' || mode === 'sync') {
+  const Images = require('./Images.js');
+
+  fetchItemImages = Images.fetchItemImages;
+  fetchMultipleItemImages = Images.fetchMultipleItemImages;
+  connection = Images.connection;
+  insertRecord = Images.insertRecord;
+  updateRecord = Images.updateRecord;
+  deleteRecord = Images.deleteRecord;
+}
 
 const newItemIds = [];
 const newItemData = [];
@@ -510,6 +519,7 @@ const testsSync = [
   testMySQLImagesMultiSync,
   testMySQLImagesSingleSync
 ];
+let connectionEnded = false;
 const handleTests = function() {
   let testSuite;
   if (mode === 'async') {
@@ -517,7 +527,7 @@ const handleTests = function() {
   } else if (mode === 'sync') {
     testSuite = testsSync;
   } else {
-    return connection.end();
+    return;
   }
 
   const nextTest = testSuite.pop();
@@ -535,12 +545,7 @@ generateArrayItemData();
 handleTests();
 
 module.exports.singleItemData = singleItemData;
-module.exports.generateSingleItemData = generateSingleItemData;
 module.exports.arrayItemData = arrayItemData;
-module.exports.generateArrayItemData = generateArrayItemData;
-module.exports.extractSingleItem = extractSingleItem;
-module.exports.makeActualCall = makeActualCall;
-module.exports.makeActualCallSync = makeActualCallSync;
 module.exports.singleItemResponseData = singleItemResponseData;
 module.exports.singleItemResponseQueryTimes = singleItemResponseQueryTimes;
 module.exports.testMySQLImagesSingle = testMySQLImagesSingle;
@@ -549,5 +554,14 @@ module.exports.multiItemResponseData = multiItemResponseData;
 module.exports.multiItemResponseQueryTimes = multiItemResponseQueryTimes;
 module.exports.testMySQLImagesMulti = testMySQLImagesMulti;
 module.exports.testMySQLImagesMultiSync = testMySQLImagesMultiSync;
-module.exports.analyzeResults = analyzeResults;
-module.exports.handleTests = handleTests;
+module.exports.createResponseData = createResponseData;
+module.exports.createResponseQueryTimes = createResponseQueryTimes;
+module.exports.testMySQLCreate = testMySQLCreate;
+module.exports.updateResponseData = updateResponseData;
+module.exports.updateResponseQueryTimes = updateResponseQueryTimes;
+module.exports.testMySQLUpdate = testMySQLUpdate;
+module.exports.deleteResponseData = deleteResponseData;
+module.exports.deleteResponseQueryTimes = deleteResponseQueryTimes;
+module.exports.testMySQLDelete = testMySQLDelete;
+module.exports.newItemIds = newItemIds;
+module.exports.newItemData = newItemData;
