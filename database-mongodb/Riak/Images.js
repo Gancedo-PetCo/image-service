@@ -10,25 +10,28 @@ function insertRecords (records) {
   return Promise.all(insertions);
 }
 
-function insertRecord (record) {
-  const newRecord = new Image(record);
-  return newRecord.save();
+function insertRecord (itemId, itemImages) {
+  return client.storeValueAsync({ key: itemId, bucket: 'itemImages', value: itemImages });
 }
 
-function updateRecord (record) {
-  return Image.findOneAndUpdate({ itemId: record.itemId }, record);
+function updateRecord (itemId, itemImages) {
+  return client.storeValueAsync({ key: itemId, bucket: 'itemImages', value: itemImages });
 }
 
 function deleteRecord (itemId) {
-  return Image.findOneAndDelete({ itemId });
+  return client.deleteValueAsync({ key: itemId, bucket: 'itemImages' });
 }
 
 function fetchItemImages (itemId) {
-  return Image.findOne({ itemId: itemId }, '-_id -__v');
+  return client.fetchValueAsync({ key: itemId, bucket: 'itemImages'});
 }
 
 function fetchMultipleItemImages (itemIds) {
-  return Image.find({ itemId: { $in: itemIds }}).select('-_id -__v').exec();
+  const promisesArray = [];
+  for (let i = 0; i < itemIds.length; i++) {
+    promisesArray.push(client.fetchValueAsync({ key: itemIds[i], bucket: 'itemImages'}));
+  }
+  return Promise.all(promisesArray);
 }
 
 function fetchAll() {
@@ -48,3 +51,4 @@ module.exports.fetchItemImages = fetchItemImages;
 module.exports.fetchMultipleItemImages =fetchMultipleItemImages;
 module.exports.fetchAll = fetchAll;
 module.exports.deleteAll = deleteAll;
+module.exports.client = client;

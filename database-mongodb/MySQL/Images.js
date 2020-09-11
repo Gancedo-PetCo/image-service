@@ -1,6 +1,5 @@
 const connection = require('./connect.js');
 const { promisifyAll } = require('bluebird');
-
 promisifyAll(connection);
 
 connection.connect((err) => {
@@ -26,33 +25,48 @@ function insertRecords (records) {
 
   }
   const queryPairs = [];
-  const query = `INSERT INTO images (itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntax}`;
-  const queryTwo = `INSERT INTO imagesBad (indexNumber,itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntaxBad}`;
+  const query = `INSERT INTO images (itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntax};`;
+  const queryTwo = `INSERT INTO imagesBad (indexNumber,itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntaxBad};`;
 
   queryPairs.push(connection.queryAsync(query));
   queryPairs.push(connection.queryAsync(queryTwo));
   return Promise.all(queryPairs);
 }
 
-function insertRecord (record) {
-  const newRecord = new Image(record);
-  return newRecord.save();
+function insertRecord (itemId, table, itemImages) {
+  const query = `INSERT INTO ${table} (itemId,itemImages) VALUES ('${itemId}','${itemImages}');`;
+  return connection.queryAsync(query);
 }
 
-function updateRecord (record) {
-  return Image.findOneAndUpdate({ itemId: record.itemId }, record);
+function updateRecord (itemId, table, itemImages) {
+  const query = `UPDATE ${table} SET itemImages = '${itemImages}' WHERE itemId = '${itemId}';`;
+  return connection.queryAsync(query);
 }
 
-function deleteRecord (itemId) {
-  return Image.findOneAndDelete({ itemId });
+function deleteRecord (itemId, table) {
+  const query = `DELETE FROM ${table} WHERE itemId = '${itemId}';`;
+  return connection.queryAsync(query);
 }
 
-function fetchItemImages (itemId) {
-  return Image.findOne({ itemId: itemId }, '-_id -__v');
+function fetchItemImages (itemId, table) {
+  const query = `SELECT itemImages FROM ${table} WHERE itemId = '${itemId}';`;
+  return connection.queryAsync(query);
 }
 
-function fetchMultipleItemImages (itemIds) {
-  return Image.find({ itemId: { $in: itemIds }}).select('-_id -__v').exec();
+function fetchMultipleItemImages (itemIds, table) {
+  let itemIdsCombinedWithMySQLSyntax = "";
+  const itemIdsLength = itemIds.length - 1;
+
+  for (let i = 0; i < itemIds.length; i++) {
+    if (i === itemIdsLength) {
+      itemIdsCombinedWithMySQLSyntax += `'${itemIds[i]}'`;
+    } else {
+      itemIdsCombinedWithMySQLSyntax += `'${itemIds[i]}',`;
+    }
+  }
+
+  const query = `SELECT itemImages FROM ${table} WHERE itemId IN (${itemIdsCombinedWithMySQLSyntax});`;
+  return connection.queryAsync(query);
 }
 
 function fetchAll() {
@@ -71,3 +85,4 @@ module.exports.fetchItemImages = fetchItemImages;
 module.exports.fetchMultipleItemImages =fetchMultipleItemImages;
 module.exports.fetchAll = fetchAll;
 module.exports.deleteAll = deleteAll;
+module.exports.connection = connection;

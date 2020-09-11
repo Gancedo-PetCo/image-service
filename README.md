@@ -12,7 +12,7 @@
 3. In the app's root folder, there is a file titled "config.example.js". Make a duplicate of this file and rename it to "config.js". Then use the terminal to run >git status. You should not see the new config.js file listed. If you do, then the name of the file is wrong. Once the correct name of the file is confirmed, you can copy your Unsplash API key to the file. You can also update the other fields that require an update.
 4. Before seeding the database, you have to run >npm run preseed. This script will make 20 Unsplash API calls (which means you're allotment per hour will be charged 20)  and may take some time to complete since the next call is not made until the previous call completes. Once that script finishes running,  you can now seed the database by running >npm run seed. If you also want to seed MySQL, run >npm run seedMySQL. Same for Riak and >npm run Riak. 
 5. Start server with >npm run start
-6. To run tests, >npm run test
+6. To run tests, >npm run test. Note that some of the tests may take ~35s or more to complete.
 
 ## CRUD API
 
