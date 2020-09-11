@@ -343,84 +343,6 @@ const testMySQLImagesMultiSync = function(queryHandler = fetchMultipleItemImages
   }
 };
 
-const singleItemResponseDataBad = [];
-const singleItemResponseQueryTimesBad = [];
-const testMySQLImagesSingleBad = function(queryHandler = fetchItemImages) {
-  console.log('singleBad started');
-
-  setTimeout(
-    makeActualCall.bind(
-      null,
-      0,
-      singleItemResponseDataBad,
-      singleItemResponseQueryTimesBad,
-      queryHandler,
-      singleItemData,
-      'imagesBad',
-      extractSingleItem
-    ),
-    10
-  );
-};
-
-const testMySQLImagesSingleBadSync = function(queryHandler = fetchItemImages) {
-  console.log('singleBad started');
-  for (let i = 0; i < singleItemData.length; i++) {
-    setTimeout(
-      makeActualCallSync.bind(
-        null,
-        i,
-        singleItemResponseDataBad,
-        singleItemResponseQueryTimesBad,
-        queryHandler,
-        singleItemData[i],
-        'imagesBad',
-        extractSingleItem
-      ),
-      requestDelay * i
-    );
-  }
-};
-
-const multiItemResponseDataBad = [];
-const multiItemResponseQueryTimesBad = [];
-const testMySQLImagesMultiBad = function(queryHandler = fetchMultipleItemImages) {
-  console.log('multiBad started');
-
-  setTimeout(
-    makeActualCall.bind(
-      null,
-      0,
-      multiItemResponseDataBad,
-      multiItemResponseQueryTimesBad,
-      queryHandler,
-      arrayItemData,
-      'imagesBad',
-      extractMultipleItems
-    ),
-    10
-  );
-};
-
-const testMySQLImagesMultiBadSync = function(queryHandler = fetchMultipleItemImages) {
-  console.log('multiBad started');
-  for (let i = 0; i < arrayItemData.length; i++) {
-    setTimeout(
-      makeActualCallSync.bind(
-        null,
-        i,
-        multiItemResponseDataBad,
-        multiItemResponseQueryTimesBad,
-        queryHandler,
-        arrayItemData[i],
-        'imagesBad',
-        extractMultipleItems
-      ),
-      requestDelay * i
-    );
-  }
-};
-
 const analyzeResults = function() {
   if (mode !== 'test') {
     console.log(`
@@ -440,18 +362,6 @@ const analyzeResults = function() {
       accumulatedMultiItemQueryTime += difference;
     }
 
-    let accumulatedSingleItemQueryTimeBad = 0;
-    for (let i = 0; i < singleItemResponseQueryTimesBad.length; i++) {
-      const difference = singleItemResponseQueryTimesBad[i][1] - singleItemResponseQueryTimesBad[i][0];
-      accumulatedSingleItemQueryTimeBad += difference;
-    }
-
-    let accumulatedMultiItemQueryTimeBad = 0;
-    for (let i = 0; i < multiItemResponseQueryTimesBad.length; i++) {
-      const difference = multiItemResponseQueryTimesBad[i][1] - multiItemResponseQueryTimesBad[i][0];
-      accumulatedMultiItemQueryTimeBad += difference;
-    }
-
     let stringInsert = '';
 
     if (mode === 'sync') {
@@ -463,12 +373,6 @@ const analyzeResults = function() {
 
     const averageMultiGoodQueryTime = accumulatedMultiItemQueryTime / numberOfRandomQueries;
     console.log(`Average good MySQL query time for ${numberOfRandomQueries} queries${stringInsert} and an array of ItemIDs is ${averageMultiGoodQueryTime} ms`);
-
-    const averageBadGoodQueryTime = accumulatedSingleItemQueryTimeBad / numberOfRandomQueries;
-    console.log(`Average bad MySQL query time for ${numberOfRandomQueries} queries${stringInsert} and a single ItemID lookup is ${averageBadGoodQueryTime} ms`);
-
-    const averageMultiBadQueryTime = accumulatedMultiItemQueryTimeBad / numberOfRandomQueries;
-    console.log(`Average bad MySQL query time for ${numberOfRandomQueries} queries${stringInsert} and an array of ItemIDs is ${averageMultiBadQueryTime} ms`);
 
     if (mode === 'async') {
       let accumulatedCreateQueryTime = 0;
@@ -508,18 +412,15 @@ const tests = [
   testMySQLDelete,
   testMySQLUpdate,
   testMySQLCreate,
-  testMySQLImagesMultiBad,
-  testMySQLImagesSingleBad,
   testMySQLImagesMulti,
   testMySQLImagesSingle
 ];
+
 const testsSync = [
-  testMySQLImagesMultiBadSync,
-  testMySQLImagesSingleBadSync,
   testMySQLImagesMultiSync,
   testMySQLImagesSingleSync
 ];
-let connectionEnded = false;
+
 const handleTests = function() {
   let testSuite;
   if (mode === 'async') {

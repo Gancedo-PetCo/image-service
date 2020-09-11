@@ -9,7 +9,6 @@ var connection = mysql.createConnection({
 });
 
 const table = 'CREATE TABLE IF NOT EXISTS SDC_Image_Service_MySQL_10Million.images (itemId VARCHAR(10) NOT NULL UNIQUE PRIMARY KEY, itemImages VARCHAR(90) NOT NULL)';
-const badTable = 'CREATE TABLE IF NOT EXISTS SDC_Image_Service_MySQL_10Million.imagesBad (indexNumber INT NOT NULL UNIQUE PRIMARY KEY AUTO_INCREMENT, itemId VARCHAR(10) NOT NULL, itemImages VARCHAR(90) NOT NULL)';
 
 connection.connect((err) => {
   if (err) {
@@ -25,20 +24,14 @@ connection.connect((err) => {
           if (err) {
             console.log(err);
           } else {
-            connection.query(badTable, (err) => {
-              if (err) {
-                console.log(err);
-              } else {
-                const seed = require('./seed.js');
-                //when generating 10,000,000 records change arguments to: (10, 25, 10000, true)
-                //arguments map to numberOfRequests, urlsPerRequest, totalNumberOfBatches, and actuallyInsert
-                for (let i = 0; i < 1000; i++) {
-                  setTimeout(seed.handleSeeding.bind(null, 10, 25, 10, true, data, i * 10), 3500 * i);
-                }
-              }
-              connection.end();
-            });
+            const seed = require('./seed.js');
+            //when generating 10,000,000 records change arguments to: (10, 25, 10000, true)
+            //arguments map to numberOfRequests, urlsPerRequest, totalNumberOfBatches, and actuallyInsert
+            for (let i = 0; i < 1000; i++) {
+              setTimeout(seed.handleSeeding.bind(null, 10, 25, 10, true, data, i * 10), 3500 * i);
+            }
           }
+          connection.end();
         });
       }
     });
