@@ -4,7 +4,10 @@ const {
   groupImageData,
   insertImages,
   handleSeeding,
+  getUnsplashImages,
 } = require('./seed.js');
+
+const optionalData = require('./unsplashData.js');
 
 const mockResponse1 = {
   data: {
@@ -178,17 +181,75 @@ describe('The seeding script', () => {
   });
 
   describe('has a helper function insertImages that', () => {
-    test('should generate two batches of 1000 objects each when told to do so', () => {
-      const extractedURLs = extractURLs(mockPromisesAray);
-      return insertImages(extractedURLs, 2, false)
-        .then((generatedBatches) => {
-          for (let i = 0; i < generatedBatches.length; i++) {
-            const generatedBatch = generatedBatches[i];
-            expect(generatedBatch.length).toBe(1000);
-          }
+    describe('should generate two batches of 1000 objects each when told to do so', () => {
+      test('with itemIds between 100 and 2099 when passed no starting batch ID', () => {
+        const extractedURLs = extractURLs(mockPromisesAray);
+        return insertImages(extractedURLs, 2, false)
+          .then((generatedBatches) => {
+            for (let i = 0; i < generatedBatches.length; i++) {
+              for (let j = 0; j > generatedBatches[i].length; j++) {
+                const { itemId } = generatedBatches[i][j];
+                const parsedItemID = Number.parseInt(itemId, 10);
+                expect(parsedItemID).toBeGreaterThanOrEqual(100);
+                expect(parsedItemID).toBeLessThanOrEqual(2099);
+              }
+              const generatedBatch = generatedBatches[i];
+              expect(generatedBatch.length).toBe(1000);
+            }
 
-          expect(generatedBatches.length).toBe(2);
-        });
+            expect(generatedBatches.length).toBe(2);
+          });
+      });
+      //starting batch of id 2 becuse number of batches is 2
+      test('with itemIds between 2100 and 4099 when passed in a starting batch ID of 2', () => {
+        const extractedURLs = extractURLs(mockPromisesAray);
+        return insertImages(extractedURLs, 2, false, 2)
+          .then((generatedBatches) => {
+            for (let i = 0; i < generatedBatches.length; i++) {
+              for (let j = 0; j > generatedBatches[i].length; j++) {
+                const { itemId } = generatedBatches[i][j];
+                const parsedItemID = Number.parseInt(itemId, 10);
+                expect(parsedItemID).toBeGreaterThanOrEqual(2100);
+                expect(parsedItemID).toBeLessThanOrEqual(4099);
+              }
+              const generatedBatch = generatedBatches[i];
+              expect(generatedBatch.length).toBe(1000);
+            }
+
+            expect(generatedBatches.length).toBe(2);
+          });
+      });
+    });
+  });
+
+  const doesNotMatter = 'Does not matter what this is for this test';
+
+  describe('has a helper function getUnsplashImages that, when passed in optional data', () => {
+    test('fills promisesArray with 20 objects', () => {
+      getUnsplashImages(doesNotMatter, doesNotMatter, optionalData);
+      for (let i = 0; i < promisesArray.length; i++) {
+        const object = promisesArray[i];
+        expect(typeof(object)).toBe('object');
+      }
+
+      expect(promisesArray).toHaveLength(20);
+    });
+
+    test('should make every object in promisesArray have a similar structure', () => {
+      const mapValidKeys = {
+        data: true,
+      };
+
+      for (let i = 0; i < promisesArray.length; i++) {
+        const object = promisesArray[i];
+
+        for (let key in object) {
+          expect(mapValidKeys[key]).toBe(true);
+        }
+
+        expect(typeof(object.data)).toBe('object');
+        expect(object.data.results.length).toBe(25);
+      }
     });
   });
 });

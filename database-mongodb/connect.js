@@ -1,11 +1,11 @@
-const mongoose = require('mongoose');
-const config = require('../config.js');
+const mysql = require('mysql');
+const { mysqlHost, mysqlUser, mysqlPassword } = require('../config.js');
 
-function connect() {
-  const mongoUri = config.mongoUri;
-  return mongoose.connect(mongoUri, {
-    useNewUrlParser: true,
-  });
-}
+var connection = mysql.createConnection({
+  host: mysqlHost,
+  user: mysqlUser,
+  password: mysqlPassword,
+  database: 'SDC_Image_Service_MySQL_10Million_PostTest'
+});
 
-module.exports = connect;
+module.exports = connection;
