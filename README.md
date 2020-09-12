@@ -13,6 +13,7 @@
 4. Before seeding the database, you have to run >npm run preseed. This script will make 20 Unsplash API calls (which means you're allotment per hour will be charged 20)  and may take some time to complete since the next call is not made until the previous call completes. Once that script finishes running,  you can now seed the database by running >npm run seed. If you also want to seed MySQL, run >npm run seedMySQL. Same for Riak and >npm run Riak. 
 5. Start server with >npm run start
 6. To run tests, >npm run test. Note that some of the tests may take ~35s or more to complete.
+7. To see the service in action, first run >npm run client. Then visit http://127.0.0.1:3003/?itemID=###  where ### can be any integer between 100-10,000,099 , no commas
 
 ## URLs and Unsplash Unique Identifier Strings(UUIS) 
 
