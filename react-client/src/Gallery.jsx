@@ -1,6 +1,10 @@
 import React from 'react';
 import { findDOMNode } from 'react-dom';
 
+const beginningURL = 'https://images.unsplash.com/photo-';
+const middleURL = '?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=';
+const endURL = '&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0';
+
 class Gallery extends React.Component {
   constructor(props) {
     super(props);
@@ -9,10 +13,7 @@ class Gallery extends React.Component {
       x: null,
       y: null,
       preview: false
-    }
-    this.handleMouseEnter = this.handleMouseEnter.bind(this);
-    this.handleMouseMove = this.handleMouseMove.bind(this);
-    this.handleMouseLeave = this.handleMouseLeave.bind(this);
+    };
   }
 
   onImageClick (image, id) {
@@ -41,18 +42,18 @@ class Gallery extends React.Component {
   }
 
   getPosition() {
-    return `${-this.state.x*3.06 + 170}px ${-this.state.y*3.06 + 205}px`;
+    return `${-this.state.x * 3.06 + 170}px ${-this.state.y * 3.06 + 205}px`;
   }
 
   handleMouseEnter(e) {
     this.setState({
-        preview: true,
-        x: e.nativeEvent.offsetX,
-        y: e.nativeEvent.offsetY
+      preview: true,
+      x: e.nativeEvent.offsetX,
+      y: e.nativeEvent.offsetY
     });
   }
 
-  handleMouseMove(e){
+  handleMouseMove(e) {
     this.setState({
       x: e.nativeEvent.offsetX,
       y: e.nativeEvent.offsetY
@@ -71,19 +72,35 @@ class Gallery extends React.Component {
     return (
       <div className="gallery">
         <div className="galleryMainImageDiv">
-          <img className="galleryMainImage" src={this.state.currentImage.medium} onMouseEnter={this.handleMouseEnter} onMouseMove={this.handleMouseMove} onMouseLeave={this.handleMouseLeave}/>
+          <img
+            className="galleryMainImage"
+            src={`${beginningURL}${this.state.currentImage}${middleURL}400${endURL}`}
+            onMouseEnter={this.handleMouseEnter.bind(this)}
+            onMouseMove={this.handleMouseMove.bind(this)}
+            onMouseLeave={this.handleMouseLeave.bind(this)}
+          />
         </div>
         <div className="galleryZoomIconAndText">
           <div className="galleryZoomIcon"></div>
           <span className="galleryZoomText">Roll over image to zoom</span>
         </div>
-        {this.state.preview && <div className="galleryPreview" style={{backgroundImage: `url(${this.state.currentImage.large})`, backgroundPosition: this.getPosition()}}></div>}
+        {this.state.preview && <div
+          className="galleryPreview"
+          style={{backgroundImage: `url('${beginningURL}${this.state.currentImage}${middleURL}1000${endURL}')`, backgroundPosition: this.getPosition()}}></div>}
         <div className="gallerySmallImages">
           {this.props.itemImages.map((image, index) =>
-              <img id={`gallerySmallImage${index}`} className={`gallerySmallImage ${this.state.currentImage.small === image.small ? "galleryImageSelected": ""}`} src={image.small} onClick={()=> this.onImageClick(image, `gallerySmallImage${index}`)} onMouseOver={this.onImageMouseOver.bind(this, `gallerySmallImage${index}`)} onMouseOut={this.onImageMouseOut.bind(this, `gallerySmallImage${index}`)} />
+            <img
+              id={`gallerySmallImage${index}`}
+              className={`gallerySmallImage
+              ${this.state.currentImage === image ? "galleryImageSelected" : ""}`}
+              src={`${beginningURL}${image}${middleURL}52${endURL}`}
+              onClick={this.onImageClick.bind(this, image, `gallerySmallImage${index}`)}
+              onMouseOver={this.onImageMouseOver.bind(this, `gallerySmallImage${index}`)}
+              onMouseOut={this.onImageMouseOut.bind(this, `gallerySmallImage${index}`)}
+            />
           )}
         </div>
-    </div>
+      </div>
     );
   }
 
