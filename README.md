@@ -2,8 +2,8 @@
 
 ## Table of contents
 1. Usage
-2. CRUD API
-3. Working with Riak
+2. URLs and UUIS
+3. CRUD API
 
 ## Usage
 
@@ -14,34 +14,51 @@
 5. Start server with >npm run start
 6. To run tests, >npm run test. Note that some of the tests may take ~35s or more to complete.
 
+## URLs and Unsplash Unique Identifier Strings(UUIS) 
+
+This service no longer returns full Unsplash URLs. Instead, it returns the Unsplash Unique Identifiers (UUI) used by Unsplash to identify images. Those identifiers must then be inserted into the following URL to retrieve the actual image:
+
+https://images.unsplash.com/photo-
+UUI (replace UUI with an actual UUI)
+?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=
+SIZE (replace SIZE with 52 400 OR 1000 which represent small, mediaum or large images)
+&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0
+
+As can be seen above, the URL has two points (UUI and SIZE) which need to be completely replaced by an acceptable value. For UUI, this is one of the UUIs returned by this service's GET requests (See Section 3 ###Read for more info). For SIZE, the service's client code uses images of three sizes and so the appropriate replacement (in horizontal pixels) is 52 400 OR 1000.
+
+IMPORTANT: This service returns both standalone Unsplash Unique Identifiers (UUI) and Unsplash Unique Identifier Strings (UUIS), depending on the route. An example UUI is: 1517213849290-bbbfffdc6da3 
+
+A UUIS is in the form:
+
+UUIxxxUUIxxxUUI
+
+In actuality the xxx are capitalized XXX since the UUI used by Unsplash are all lowercase letters and numbers. This means you can .split() the string on "XXX" to retrieve each individual UUI. If there is only one image for an item, then it will not have XXX attached to the end of it, but splitting on XXX will not error out and so this is fine.
+
 ## CRUD API
 
 The CRUD API can be found below. Each item in the API corresponds to the following rules:
 
-:itemId -  a string version of an integer greater than 100
+#### :itemId -  a string version of an integer greater than 100
 
-:itemData - JSON string of an array filled with at least one itemImage object
+#### :itemData - String in the form of:
 
-itemImage object - {
-  small: 'valid image URL',
-  medium: 'valid image URL',
-  large: 'valid image URL'
-}
+VUIURLxxxVUIURLxxxVUIURL
 
-NOTE1: For 'valid image URL', the endpoint confirms that the URL format is correct. It does not confirm that the URL leads to a valid image. That is your responsibility.
-NOTE2: The expected dimensions for each photograph are, roughly, in pixels:
-  small 54x54
-  medium: 400x400
-  large: 755x755
-NOTE3: The expected dimensions are not strictly enforced and, for the 'large" dimensions in particular, can vary widely. However, it is advised to do the following two things: The first dimension is expected to to be the exact pixel amount. For the second number, you should try to get the pixels as close as possible to it.
+Where VUIURL stands for Valid Unsplash Image URL and the xxx are actually capitalized XXX
 
-itemImages object - {
+NOTE1: A valid VUIURL can be obtained in one of two ways:
+1. On the Unsplash site, when you are searching for photos, do NOT right-click the searched photos and copy that URL. Instead, left-click the photo, causing a modal to pop-up featuring a larger version of the photo. It is this enlarged photo that you right-click and copy the URL link from
+2. Using the Unsplash API, there are several endpoints that could potentially send you back image data. In the data obect that corresponds to a particular image, there is a "urls" key whose value is an object that, itself, has multiple keys, each with a URL as its value. Any of these URLs should work but this service only gaurantees working for "regular" URLs.  
+NOTE2: An item can have between one and three images. If you only submit one VUIURL, then there is no need to append XXX to it.
+
+#### itemImages object - {
   itemId: String representing the item's integer ID number,
-  itemImages: An array filled with at least one itemImage object
+  itemImages: a UUIS string. See Section 2 above (URLs and Unsplash Unique Identifier Strings(UUIS)) for an explanation as to what a UUIS is
 }
 
-mainImage object - {
-image: URL String for the smallest image size, for the very first image found in the array you would get from GET /itemImages/:itemId
+#### mainImage object - {
+  itemId: String representing the item's integer ID number,
+  image: a UUI string. See Section 2 above (URLs and Unsplash Unique Identifier Strings(UUIS)) for an explanation as to what a UUI is
 }
 
 
@@ -49,7 +66,7 @@ image: URL String for the smallest image size, for the very first image found in
 
 Method: POST
 Endpoint: /addItemImages/:itemId?itemImages=:itemData
-Response: The string: Item ${itemId} succesfully added to database
+Response: The string: Item ${itemId} successfully added to database
 
 
 ### READ
@@ -67,9 +84,10 @@ Response: mainImage object
 Method: GET
 Endpoint: /itemImages/:itemId/mainImage
 SPECIAL: For this endpoint, the :itemId can actually be an "array" of itemIds. This array is in the format array###,###,### where each ### is a valid itemId
-Response: An array of slightly modified mainImage objects. Each object has the additional field: itemId: String representing the item's integer ID number
+Response: An array of mainImage objects. One for each itemId in the "array" except in the case of duplicate itemIds OR itemIds that do not exist in the database.
 
 Note1: The returned array is not gauranteed to have the mainImage objects in the same order that the itemIds appear in the input "array"
+
 -----Special-----
 
 
@@ -77,7 +95,7 @@ Note1: The returned array is not gauranteed to have the mainImage objects in the
 
 Method: PUT
 Endpoint: /addItemImages/:itemId?itemImages=:itemData
-Response: The string: Item ${itemId} succesfully updated
+Response: The string: Item ${itemId} successfully updated
 
 
 ### DELETE
@@ -87,75 +105,6 @@ Endpoint: /itemImages/:itemId
 Response: The string: Item ${itemId} deleted
 
 
-## Working with Riak
-
-Riak, as I discovered after commiting to the DB, was made a company that no longer exists. The tech was bought by another company but, already, I have found some broken links on their website and/or outdated info. Since it is hard to find info on the DB, I have included this section for the steps I followed to use Riak.
-
-1. For MacOs, i followed the instructions found here https://docs.riak.com/riak/kv/2.2.3/setup/installing/mac-osx/index.html
-
-I followed the "From Precompiled Tarballs" instructions. Note that I would not recommend following these instructions exactly and so the next few steps below will tell you what to do.
-
-2. Open a FRESH terminal window and then >curl -O http://s3.amazonaws.com/downloads.basho.com/riak/2.2/2.2.3/osx/10.8/riak-2.2.3-OSX-x86_64.tar.gz
-
-3. The command in point 2 will initiate a download of the precompiled tarballs. Once it completes you can install the tarballs with: (in the same terminal window) >tar xzvf riak-2.2.3-osx-x86_64.tar.gz
-
-4. At this point, the tarballs have been installed. The reason I wanted a FRESH teminal window is so, hopefully, Riak would be installed directly in your home folder. This is the folder terminal defaults to when first opened. Also, I do not know how the command in Step 3 operates. As in, if it always installs in your home directory or if installs in whatever folder you terminal is cd to. To be safe, use a fresh terminal.
-
-Once the tarballs are installed, the next set of instructions in the official Riak instructions should NOT BE followed. Those instructions have you firing up your Riak node. However, if you want to rename your Riak node and you already fired up the node, you have to first stop it and then go through a file deletion process before you can actually do so. Very irresponsible to tell you to fire up the Riak node without first warning you certain configuration options are hard to change if you already fired it up. Instead, proceed to Step 5.
-
-5. The Riak folder you should be in your home directory if you followed all the steps exactly. Officially the folder will be labelled riak-version. For mine, the version was 2.2.3 and so my folder is titled riak-2.2.3. In that folder, you can find the config file at /etc/riak.conf
-
-Open this file with a text editor and then make the following changes:
-
-nodename = riaktest@127.0.0.1 (from riak@127.0.0.1)
-
-ring_size = 8 (from 64)
-
-Storage_backend = leveldb (from bitcask)
-
-leveldb.maximum_memory.percent = 5 (from 70)
-
-leveldb.compression = off (from on)
-
-buckets.default.n_val = 1 (from 3)
-
-NOTE1: Since there is more than one way to alter the config for Riak, some of the lines you alter might have ## to comment out that line. You will have to delete those ## on just the line you altered for the cahnge to take effect.
-
-NOTE2: for the last config variable (buckets.default.n_val), you will have to manually add it at the bottom of the config file since it isn't already listed there.
-
-NOTE3: If you want to read explanations for each config change, you can see my engineering journal at https://docs.google.com/document/d/1Un5qGx6VMAYrafG-_iP8LWG7ENGys1yWpatvlokr-Bc/edit
-
-6. After you edit and save the config file, before you start up the Riak node, you will need to change the number of max files a program is allowed to open on your computer. You can do with >sudo launchctl limit maxfiles softLimit hardLimit. Riak expects the softLimit and hardLimit to be at least 65536 and I have been using this exact command: >sudo launchctl limit maxfiles 70000 70000
-
-You can check that the change took effect with >launchctl limit maxfiles
-
-Note that when you finally fire up Riak, it might complain that the maxfiles limit you just changed is set too low, even though you just changed it. I do not know if this is a bug or not, nor do I know how to check if Riak is sending the warning but is actually benefiting from the change you just made. All I know is Riak seemed to work fine for me.
-
-Also note that the change to the maxfiles limit is only temporary. When you log out or shutdown your comp and relog in, the change will have reverted. There is a way to make this change permanent but I would not advise this since it grants ANY program this new limit. Only if you are running Riak on a dedicated server box would I suggest making this change permanent.
-
-7. You can now fire up the Riak node following the instructions I told you not to follow earlier. However, i would suggest making it so that you don't have to cd into that folder anytime. Rather, there is a way to manually make it to you can riak commands anywhere from in terminal. Similar to how you can run git, npm, etc commands anywhere from in terminal. To do that (note that the instructions are for the Catalina OS. If yours is different, you will have to research "adding to PATH operating system". Most likely, it will just be the file name in step c that is different but it could be all instructions):
-a. open a fresh terminal window or, in the terminal window you have now, type >cd ~/    Either way, you will be back in your home folder as cd.
-b. >ls -a
-c. The last command will list everything currently in your home directory. Look for a file titled .zprofile. If it exists, proceed to step d. Otherwise, create it with >touch .zprofile
-d. Once you open .zprofile in a text editor, copy this line into it:
-export PATH=$PATH:/Users/nzabalza/riak-2.2.3/bin
-and make the necessary changes for you comp's file system.
-
-The copied line takes the exisitng PATH (acquired with $PATH) and tacks on the path to Riak's command line interface to it. Note that you have to separate all the paths in PATH with : and so don't forget that colon.
-
-Also note that the path you are adding is not absolute from the location of your home directory, even though the .zprofile is in your home directory. Rather it is absolute from your harddrive which is why my path is /Users/nzabalza/riak-2.2.3/bin rather than /riak-2.2.3/bin
-
-e. One you save the changes to .zprofile they won't take effect right away since terminal loads .zprofile upon start up. So you will need a FRESH terminla window before mocing on to Step 8.
-
-8. If you correctly added the Riak CLI to your computer's PATH variable, then you can now run riak commands from anywhere in terminal, no matter wher you are cd. To start the node, run >riak start
-
-If it doesn't start and errors out after 10 or so seconds, you might have made a mistake while altering  the config. You can check your config with >riak chkconfig
-
-9. Yes, you will have to manually start your Riak node with >riak start everytime you log in.
-10. You can now seed your Riak node by cd into this project's root folder and running >npm run seedRiak. (Assuming of course you set up your config.js file correctly as mentioned in the Usage section above)
-11. To confirm the seeding worked, you can use Postman or curl to visit http://127.0.0.1:8098/buckets/itemImages/keys/100
-
-You can also change the 100 to any value between 100-2099 since the seeding script is currently set to generate 200 records. You should recieve a string back that is not "not found" or some similar error message.
 
 
 

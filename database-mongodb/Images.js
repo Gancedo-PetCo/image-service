@@ -11,7 +11,7 @@ connection.connect((err) => {
 });
 
 
-function insertRecords (records) {
+function insertRecords (records, table) {
   let insertionsParsedToMySQLSyntax = '';
   for (let i = 0; i < records.length; i++) {
     if (i !== 999) {
@@ -22,7 +22,7 @@ function insertRecords (records) {
 
   }
   const queryPairs = [];
-  const query = `INSERT INTO images (itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntax};`;
+  const query = `INSERT INTO ${table} (itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntax};`;
 
   queryPairs.push(connection.queryAsync(query));
   return Promise.all(queryPairs);
@@ -60,17 +60,17 @@ function fetchMultipleItemImages (itemIds, table) {
     }
   }
 
-  const query = `SELECT itemImages FROM ${table} WHERE itemId IN (${itemIdsCombinedWithMySQLSyntax});`;
+  const query = `SELECT itemId, itemImages FROM ${table} WHERE itemId IN (${itemIdsCombinedWithMySQLSyntax});`;
   return connection.queryAsync(query);
 }
 
-function fetchAll() {
-  return Image.find({});
-}
+// function fetchAll() {
+//   return Image.find({});
+// }
 
-function deleteAll() {
-  return Image.remove({});
-}
+// function deleteAll() {
+//   return Image.remove({});
+// }
 
 module.exports.insertRecords = insertRecords;
 module.exports.insertRecord = insertRecord;
@@ -78,6 +78,6 @@ module.exports.updateRecord = updateRecord;
 module.exports.deleteRecord = deleteRecord;
 module.exports.fetchItemImages = fetchItemImages;
 module.exports.fetchMultipleItemImages =fetchMultipleItemImages;
-module.exports.fetchAll = fetchAll;
-module.exports.deleteAll = deleteAll;
+// module.exports.fetchAll = fetchAll;
+// module.exports.deleteAll = deleteAll;
 module.exports.connection = connection;

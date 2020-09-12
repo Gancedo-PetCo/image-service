@@ -10,19 +10,15 @@ describe('The server\'s CRUD operations', () => {
 
           expect(status).toBe(200);
           expect(itemId).toBe('100');
-          expect(itemImages[0].small).toBeDefined();
-          expect(itemImages[0].medium).toBeDefined();
-          expect(itemImages[0].large).toBeDefined();
-          expect(itemImages[1].small).toBeDefined();
-          expect(itemImages[1].medium).toBeDefined();
-          expect(itemImages[1].large).toBeDefined();
+          expect(itemImages).toBeDefined();
+          expect(typeof(itemImages)).toBe('string');
         })
         .catch((err) => {
           console.log(err);
         });
     });
 
-    test('the server correctly returns 404 for an not in the DB', () => {
+    test('the server correctly returns 404 for an item not in the DB', () => {
       return axios.get('http://127.0.0.1:3003/itemImages/99')
         .catch((err) => {
           expect(err.response.status).toBe(404);
@@ -58,10 +54,9 @@ describe('The server\'s CRUD operations', () => {
       });
 
       test('no itemImages data included in the query params array', () => {
-        const badData = [];
-        const badDataStringified = JSON.stringify(badData);
+        const badData = '';
 
-        return axios.post(`http://127.0.0.1:3003/addItemImages/20000000?itemImages=${badDataStringified}`)
+        return axios.post(`http://127.0.0.1:3003/addItemImages/20000000?itemImages=${badData}`)
           .catch((err) => {
             expect(err.response.status).toBe(400);
             expect(err.response.data).toBe('No itemImages present in request query params');
@@ -70,21 +65,11 @@ describe('The server\'s CRUD operations', () => {
 
       test('has an itemId that already exists in the database', () => {
         const goodData = [
-          {
-            'small': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'medium': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          },
-          {
-            'small': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'medium': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          }
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
+          'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
         ];
 
-        let goodDataStringified = JSON.stringify(goodData);
-        const goodDataSplit = goodDataStringified.split('&');
-        goodDataStringified = goodDataSplit.join('%26');
+        const goodDataStringified = goodData.join('XXX');
 
         return axios.post(`http://127.0.0.1:3003/addItemImages/100?itemImages=${goodDataStringified}`)
           .catch((err) => {
@@ -93,117 +78,92 @@ describe('The server\'s CRUD operations', () => {
           });
       });
 
-      test('the itemImages data in not an array', () => {
-        const badData = {};
-        const badDataStringified = JSON.stringify(badData);
+      test('has more than three itemImages submitted', () => {
+        const badData = [
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c',
+          'https://images.unsplash.com/photo-1521940340186-d473d4400001',
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9dnz',
+          'https://images.unsplash.com/photo-1521940340186-d473d44000nz',
+        ];
+
+        const badDataStringified = badData.join('XXX');
 
         return axios.post(`http://127.0.0.1:3003/addItemImages/20000000?itemImages=${badDataStringified}`)
           .catch((err) => {
             expect(err.response.status).toBe(400);
-            expect(err.response.data).toBe('itemImages should be an array of itemImage objects, stringified with JSON.stringfy');
+            expect(err.response.data).toBe('Too many itemImages included. Max is 3.');
           });
       });
 
-      test('has at least one itemImage object that contains an invalid key', () => {
+      test('has at least one URL that is not a valid Unsplash image URL', () => {
         const badData = [
-          {
-            'small': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'medium': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          },
-          {
-            'badKey': '',
-            'small': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'medium': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          }
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c',
+          'https://images.unsplas.com/photo-1521940340186-d473d4400001'
         ];
 
-        let badDataStringified = JSON.stringify(badData);
-        const badDataSplit = badDataStringified.split('&');
-        badDataStringified = badDataSplit.join('%26');
+        const badDataStringified = badData.join('XXX');
 
-        return axios.post(`http://127.0.0.1:3003/addItemImages/20000000?itemImages=${badDataStringified}`)
+        return axios.post(`http://127.0.0.1:3003/addItemImages/20000001?itemImages=${badDataStringified}`)
           .catch((err) => {
             expect(err.response.status).toBe(400);
-            expect(err.response.data).toBe('At least one itemImage object contains an invalid key');
+            expect(err.response.data).toBe('At least one URL is not a Unsplash URL');
+          });
+      });
+
+      test('has at least one URL that does not have a valid Unsplash Unique Identifier', () => {
+        const badData = [
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c',
+          'https://images.unsplash.com/photo-1521940340186d473d4400001',
+        ];
+
+        const badDataStringified = badData.join('XXX');
+
+        return axios.post(`http://127.0.0.1:3003/addItemImages/20000001?itemImages=${badDataStringified}`)
+          .catch((err) => {
+            expect(err.response.status).toBe(400);
+            expect(err.response.data).toBe('At least one URL is not a valid Unsplash photo URL');
           });
       });
 
       test('has at least one URL in an invalid URL form', () => {
         const badData = [
-          {
-            'small': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'medium': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          },
-          {
-            'small': 'https://',
-            'medium': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          }
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
+          'https://'
         ];
 
-        let badDataStringified = JSON.stringify(badData);
-        const badDataSplit = badDataStringified.split('&');
-        badDataStringified = badDataSplit.join('%26');
+        const badDataStringified = badData.join('XXX');
 
-        return axios.post(`http://127.0.0.1:3003/addItemImages/20000000?itemImages=${badDataStringified}`)
+        return axios.post(`http://127.0.0.1:3003/addItemImages/20000001?itemImages=${badDataStringified}`)
           .catch((err) => {
             expect(err.response.status).toBe(400);
             expect(err.response.data).toBe('At least one URL is not a valid URL format');
-          });
-      });
-
-      test('has at least one itemImage object with a mmissing required key', () => {
-        const badData = [
-          {
-            'medium': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          },
-          {
-            'small': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'medium': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          }
-        ];
-
-        let badDataStringified = JSON.stringify(badData);
-        const badDataSplit = badDataStringified.split('&');
-        badDataStringified = badDataSplit.join('%26');
-
-        return axios.post(`http://127.0.0.1:3003/addItemImages/20000000?itemImages=${badDataStringified}`)
-          .catch((err) => {
-            expect(err.response.status).toBe(400);
-            expect(err.response.data).toBe('At least one itemImage object fails to contain the key \'small\'');
           });
       });
     });
 
     test('the server correctly inserts a record into the DB when the POSTed data conforms to the API standard', () => {
       const goodData = [
-        {
-          'small': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-          'medium': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-          'large': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-        },
-        {
-          'small': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-          'medium': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-          'large': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-        }
+        'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?',
+        'https://images.unsplash.com/photo-1521940340186-d473d4400001?',
       ];
 
-      let goodDataStringified = JSON.stringify(goodData);
-      const goodDataSplit = goodDataStringified.split('&');
-      goodDataStringified = goodDataSplit.join('%26');
+      const goodDataStringified = goodData.join('XXX');
 
       return axios.post(`http://127.0.0.1:3003/addItemImages/20000000?itemImages=${goodDataStringified}`)
         .then((response) => {
           const { status, data } = response;
 
           expect(status).toBe(201);
-          expect(data).toBe('Item 20000000 succesfully added to database');
+          expect(data).toBe('Item 20000000 successfully added to database');
+          return axios.get('http://127.0.0.1:3003/itemImages/20000000')
+            .then((response) => {
+              const { status, data } = response;
+              const { itemId, itemImages } = data;
+
+              expect(status).toBe(200);
+              expect(itemId).toBe('20000000');
+              expect(itemImages).toBe('1581467655410-0c2bf55d9d6cXXX1521940340186-d473d4400001');
+            });
         })
         .catch((err) => {
           console.log(err);
@@ -238,10 +198,9 @@ describe('The server\'s CRUD operations', () => {
       });
 
       test('no itemImages data included in the query params array', () => {
-        const badData = [];
-        const badDataStringified = JSON.stringify(badData);
+        const badData = '';
 
-        return axios.put(`http://127.0.0.1:3003/updateItemImages/20000000?itemImages=${badDataStringified}`)
+        return axios.put(`http://127.0.0.1:3003/updateItemImages/20000000?itemImages=${badData}`)
           .catch((err) => {
             expect(err.response.status).toBe(400);
             expect(err.response.data).toBe('No itemImages present in request query params');
@@ -250,21 +209,11 @@ describe('The server\'s CRUD operations', () => {
 
       test('has an itemId that doesn\'t exist in the database', () => {
         const goodData = [
-          {
-            'small': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'medium': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          },
-          {
-            'small': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'medium': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          }
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
+          'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
         ];
 
-        let goodDataStringified = JSON.stringify(goodData);
-        const goodDataSplit = goodDataStringified.split('&');
-        goodDataStringified = goodDataSplit.join('%26');
+        const goodDataStringified = goodData.join('XXX');
 
         return axios.put(`http://127.0.0.1:3003/updateItemImages/15000000?itemImages=${goodDataStringified}`)
           .catch((err) => {
@@ -273,60 +222,60 @@ describe('The server\'s CRUD operations', () => {
           });
       });
 
-      test('the itemImages data in not an array', () => {
-        const badData = {};
-        const badDataStringified = JSON.stringify(badData);
+      test('has more than three itemImages submitted', () => {
+        const badData = [
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c',
+          'https://images.unsplash.com/photo-1521940340186-d473d4400001',
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9dnz',
+          'https://images.unsplash.com/photo-1521940340186-d473d44000nz',
+        ];
 
-        return axios.put(`http://127.0.0.1:3003/updateItemImages/20000000?itemImages=${badDataStringified}`)
+        const badDataStringified = badData.join('XXX');
+
+        return axios.put(`http://127.0.0.1:3003/updateItemImages/100?itemImages=${badDataStringified}`)
           .catch((err) => {
             expect(err.response.status).toBe(400);
-            expect(err.response.data).toBe('itemImages should be an array of itemImage objects, stringified with JSON.stringfy');
+            expect(err.response.data).toBe('Too many itemImages included. Max is 3.');
           });
       });
 
-      test('has at least one itemImage object that contains an invalid key', () => {
+      test('has at least one URL that is not a valid Unsplash image URL', () => {
         const badData = [
-          {
-            'small': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'medium': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          },
-          {
-            'badKey': '',
-            'small': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'medium': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          }
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c',
+          'https://images.unsplas.com/photo-1521940340186-d473d4400001',
         ];
 
-        let badDataStringified = JSON.stringify(badData);
-        const badDataSplit = badDataStringified.split('&');
-        badDataStringified = badDataSplit.join('%26');
+        const badDataStringified = badData.join('XXX');
 
-        return axios.put(`http://127.0.0.1:3003/updateItemImages/20000000?itemImages=${badDataStringified}`)
+        return axios.put(`http://127.0.0.1:3003/updateItemImages/100?itemImages=${badDataStringified}`)
           .catch((err) => {
             expect(err.response.status).toBe(400);
-            expect(err.response.data).toBe('At least one itemImage object contains an invalid key');
+            expect(err.response.data).toBe('At least one URL is not a Unsplash URL');
+          });
+      });
+
+      test('has at least one URL that does not have a valid Unsplash Unique Identifier', () => {
+        const badData = [
+          'https://images.unsplash.com/photo-15814676554100c2bf55d9d6c',
+          'https://images.unsplash.com/photo-1521940340186-d473d4400001'
+        ];
+
+        const badDataStringified = badData.join('XXX');
+
+        return axios.put(`http://127.0.0.1:3003/updateItemImages/100?itemImages=${badDataStringified}`)
+          .catch((err) => {
+            expect(err.response.status).toBe(400);
+            expect(err.response.data).toBe('At least one URL is not a valid Unsplash photo URL');
           });
       });
 
       test('has at least one URL in an invalid URL form', () => {
         const badData = [
-          {
-            'small': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'medium': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          },
-          {
-            'small': 'https://',
-            'medium': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          }
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
+          'https://',
         ];
 
-        let badDataStringified = JSON.stringify(badData);
-        const badDataSplit = badDataStringified.split('&');
-        badDataStringified = badDataSplit.join('%26');
+        const badDataStringified = badData.join('XXX');
 
         return axios.put(`http://127.0.0.1:3003/updateItemImages/20000000?itemImages=${badDataStringified}`)
           .catch((err) => {
@@ -334,56 +283,31 @@ describe('The server\'s CRUD operations', () => {
             expect(err.response.data).toBe('At least one URL is not a valid URL format');
           });
       });
-
-      test('has at least one itemImage object with a mmissing required key', () => {
-        const badData = [
-          {
-            'medium': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          },
-          {
-            'small': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'medium': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-            'large': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-          }
-        ];
-
-        let badDataStringified = JSON.stringify(badData);
-        const badDataSplit = badDataStringified.split('&');
-        badDataStringified = badDataSplit.join('%26');
-
-        return axios.put(`http://127.0.0.1:3003/updateItemImages/20000000?itemImages=${badDataStringified}`)
-          .catch((err) => {
-            expect(err.response.status).toBe(400);
-            expect(err.response.data).toBe('At least one itemImage object fails to contain the key \'small\'');
-          });
-      });
     });
 
     test('the server correctly updates a record in the DB when the PUT data conforms to the API standard', () => {
       const goodData = [
-        {
-          'small': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-          'medium': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-          'large': 'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-        },
-        {
-          'small': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-          'medium': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-          'large': 'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1000&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0'
-        }
+        'https://images.unsplash.com/photo-1581467655410-0c2bf55d9dnz?',
+        'https://images.unsplash.com/photo-1521940340186-d473d44000nz?',
       ];
 
-      let goodDataStringified = JSON.stringify(goodData);
-      const goodDataSplit = goodDataStringified.split('&');
-      goodDataStringified = goodDataSplit.join('%26');
+      const goodDataStringified = goodData.join('XXX');
 
       return axios.put(`http://127.0.0.1:3003/updateItemImages/20000000?itemImages=${goodDataStringified}`)
         .then((response) => {
           const { status, data } = response;
 
           expect(status).toBe(201);
-          expect(data).toBe('Item 20000000 succesfully updated');
+          expect(data).toBe('Item 20000000 successfully updated');
+          return axios.get('http://127.0.0.1:3003/itemImages/20000000')
+            .then((response) => {
+              const { status, data } = response;
+              const { itemId, itemImages } = data;
+
+              expect(status).toBe(200);
+              expect(itemId).toBe('20000000');
+              expect(itemImages).toBe('1581467655410-0c2bf55d9dnzXXX1521940340186-d473d44000nz');
+            });
         })
         .catch((err) => {
           console.log(err);
@@ -398,7 +322,7 @@ describe('The server\'s CRUD operations', () => {
           const { status, data } = response;
 
           expect(status).toBe(201);
-          expect(itemId).toBe('Item 20000000 deleted');
+          expect(data).toBe('Item 20000000 deleted');
         })
         .catch((err) => {
           console.log(err);
