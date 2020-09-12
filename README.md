@@ -68,6 +68,7 @@ Method: POST
 Endpoint: /addItemImages/:itemId?itemImages=:itemData
 Response: The string: Item ${itemId} successfully added to database
 
+Note1: Recommended you use Postman to make a POST request
 
 ### READ
 
@@ -97,6 +98,7 @@ Method: PUT
 Endpoint: /addItemImages/:itemId?itemImages=:itemData
 Response: The string: Item ${itemId} successfully updated
 
+Note1: Recommended you use Postman to make a PUT request
 
 ### DELETE
 

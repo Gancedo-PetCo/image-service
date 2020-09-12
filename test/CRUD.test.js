@@ -65,8 +65,8 @@ describe('The server\'s CRUD operations', () => {
 
       test('has an itemId that already exists in the database', () => {
         const goodData = [
-          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-          'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?',
+          'https://images.unsplash.com/photo-1521940340186-d473d4400001?',
         ];
 
         const goodDataStringified = goodData.join('XXX');
@@ -80,10 +80,10 @@ describe('The server\'s CRUD operations', () => {
 
       test('has more than three itemImages submitted', () => {
         const badData = [
-          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c',
-          'https://images.unsplash.com/photo-1521940340186-d473d4400001',
-          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9dnz',
-          'https://images.unsplash.com/photo-1521940340186-d473d44000nz',
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9tr4',
+          'https://images.unsplash.com/photo-1521940340186-d473d4400tr4',
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9tr4',
+          'https://images.unsplash.com/photo-1521940340186-d473d4400tr4',
         ];
 
         const badDataStringified = badData.join('XXX');
@@ -97,8 +97,8 @@ describe('The server\'s CRUD operations', () => {
 
       test('has at least one URL that is not a valid Unsplash image URL', () => {
         const badData = [
-          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c',
-          'https://images.unsplas.com/photo-1521940340186-d473d4400001'
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9tr3',
+          'https://images.unsplas.com/photo-1521940340186-d473d4400tr3'
         ];
 
         const badDataStringified = badData.join('XXX');
@@ -112,8 +112,8 @@ describe('The server\'s CRUD operations', () => {
 
       test('has at least one URL that does not have a valid Unsplash Unique Identifier', () => {
         const badData = [
-          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c',
-          'https://images.unsplash.com/photo-1521940340186d473d4400001',
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9tr1',
+          'https://images.unsplash.com/photo-1521940340186d473d4400tr1',
         ];
 
         const badDataStringified = badData.join('XXX');
@@ -127,7 +127,7 @@ describe('The server\'s CRUD operations', () => {
 
       test('has at least one URL in an invalid URL form', () => {
         const badData = [
-          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9tr2?',
           'https://'
         ];
 
@@ -209,8 +209,8 @@ describe('The server\'s CRUD operations', () => {
 
       test('has an itemId that doesn\'t exist in the database', () => {
         const goodData = [
-          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
-          'https://images.unsplash.com/photo-1521940340186-d473d4400001?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?',
+          'https://images.unsplash.com/photo-1521940340186-d473d4400001?',
         ];
 
         const goodDataStringified = goodData.join('XXX');
@@ -271,7 +271,7 @@ describe('The server\'s CRUD operations', () => {
 
       test('has at least one URL in an invalid URL form', () => {
         const badData = [
-          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=54&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0',
+          'https://images.unsplash.com/photo-1581467655410-0c2bf55d9d6c?',
           'https://',
         ];
 
