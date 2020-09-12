@@ -1,4 +1,4 @@
-const data = require('./unsplashData.js');
+const data = require('../database/unsplashData.js');
 
 describe('The unsplashAPIcall.js script generates the file unsplashData.js such that', () => {
   test('its export is an array filled with 20 objects', () => {

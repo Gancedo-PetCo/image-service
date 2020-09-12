@@ -11,7 +11,7 @@ connection.connect((err) => {
 });
 
 
-function insertRecords (records, table) {
+function insertRecords (records) {
   let insertionsParsedToMySQLSyntax = '';
   for (let i = 0; i < records.length; i++) {
     if (i !== 999) {
@@ -22,33 +22,33 @@ function insertRecords (records, table) {
 
   }
   const queryPairs = [];
-  const query = `INSERT INTO ${table} (itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntax};`;
+  const query = `INSERT INTO images (itemId,itemImages) VALUES ${insertionsParsedToMySQLSyntax};`;
 
   queryPairs.push(connection.queryAsync(query));
   return Promise.all(queryPairs);
 }
 
-function insertRecord (itemId, table, itemImages) {
-  const query = `INSERT INTO ${table} (itemId,itemImages) VALUES ('${itemId}','${itemImages}');`;
+function insertRecord (itemId, itemImages) {
+  const query = `INSERT INTO images (itemId,itemImages) VALUES ('${itemId}','${itemImages}');`;
   return connection.queryAsync(query);
 }
 
-function updateRecord (itemId, table, itemImages) {
-  const query = `UPDATE ${table} SET itemImages = '${itemImages}' WHERE itemId = '${itemId}';`;
+function updateRecord (itemId, itemImages) {
+  const query = `UPDATE images SET itemImages = '${itemImages}' WHERE itemId = '${itemId}';`;
   return connection.queryAsync(query);
 }
 
-function deleteRecord (itemId, table) {
-  const query = `DELETE FROM ${table} WHERE itemId = '${itemId}';`;
+function deleteRecord (itemId) {
+  const query = `DELETE FROM images WHERE itemId = '${itemId}';`;
   return connection.queryAsync(query);
 }
 
-function fetchItemImages (itemId, table) {
-  const query = `SELECT itemImages FROM ${table} WHERE itemId = '${itemId}';`;
+function fetchItemImages (itemId) {
+  const query = `SELECT itemImages FROM images WHERE itemId = '${itemId}';`;
   return connection.queryAsync(query);
 }
 
-function fetchMultipleItemImages (itemIds, table) {
+function fetchMultipleItemImages (itemIds) {
   let itemIdsCombinedWithMySQLSyntax = "";
   const itemIdsLength = itemIds.length - 1;
 
@@ -60,7 +60,7 @@ function fetchMultipleItemImages (itemIds, table) {
     }
   }
 
-  const query = `SELECT itemId, itemImages FROM ${table} WHERE itemId IN (${itemIdsCombinedWithMySQLSyntax});`;
+  const query = `SELECT itemId, itemImages FROM images WHERE itemId IN (${itemIdsCombinedWithMySQLSyntax});`;
   return connection.queryAsync(query);
 }
 

@@ -128,7 +128,7 @@ const handleSeeding = function(numberOfRequests, urlsPerRequest, totalNumberOfBa
       return insertImages(urlsArray, totalNumberOfBatches, actuallyInsert, startingBatch);
     })
     .then(() => {
-      if (startingBatch === 9990) {
+      if (startingBatch === 9990 || actuallyInsert === false) {
         connection.end();
       }
 

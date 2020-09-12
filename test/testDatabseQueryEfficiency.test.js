@@ -20,7 +20,7 @@ const {
   testMySQLDelete,
   newItemIds,
   newItemData
-} = require('./testDatabaseQueryEfficiency.js');
+} = require('../database/testDatabaseQueryEfficiency.js');
 
 const fakeSingleItemData = [];
 const fakeArrayItemData = [];

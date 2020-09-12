@@ -1,10 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const Images = require('../database-mongodb/Images.js');
+const Images = require('../database/Images.js');
 const cors = require('cors');
 const app = express();
 app.use(cors());
+const morgan = require('morgan');
 
+app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use('*.js', function (req, res, next) {
@@ -19,7 +21,7 @@ app.use(express.static('./react-client/dist'));
 app.get('/itemImages/:itemId', function(req, res) {
   const { itemId } = req.params;
 
-  Images.fetchItemImages(itemId, 'images')
+  Images.fetchItemImages(itemId)
     .then((data) => {
       if (data[0]) {
         const { itemImages } = data[0];
@@ -81,7 +83,7 @@ app.post('/addItemImages/:itemId', (req, res) => {
 
   const itemImages = receivedItemImages.split('XXX');
 
-  Images.fetchItemImages(itemId, 'images')
+  Images.fetchItemImages(itemId)
     .then((data) => {
       if (data[0]) {
         res.status(400).send('Item with that itemId already exists');
@@ -92,7 +94,7 @@ app.post('/addItemImages/:itemId', (req, res) => {
           return res.status(400).send(potentialErrorMessage);
         } else {
           const itemImages = potentialErrorMessage.join('XXX');
-          Images.insertRecord(itemId, 'images', itemImages)
+          Images.insertRecord(itemId, itemImages)
             .then((data) => {
               res.status(201).send(`Item ${itemId} successfully added to database`);
             })
@@ -127,7 +129,7 @@ app.put('/updateItemImages/:itemId', (req, res) => {
 
   const itemImages = receivedItemImages.split('XXX');
 
-  Images.fetchItemImages(itemId, 'images')
+  Images.fetchItemImages(itemId)
     .then((data) => {
       if (!data[0]) {
         res.status(400).send(`Item with the itemId ${itemId} does not exist`);
@@ -138,7 +140,7 @@ app.put('/updateItemImages/:itemId', (req, res) => {
           return res.status(400).send(potentialErrorMessage);
         } else {
           const itemImages = potentialErrorMessage.join('XXX');
-          Images.updateRecord(itemId, 'images', itemImages)
+          Images.updateRecord(itemId, itemImages)
             .then((data) => {
               res.status(201).send(`Item ${itemId} successfully updated`);
             })
@@ -166,10 +168,10 @@ app.delete('/deleteItemImages/:itemId', (req, res) => {
     }
   }
 
-  Images.fetchItemImages(itemId, 'images')
+  Images.fetchItemImages(itemId)
     .then((data) => {
       if (data[0]) {
-        Images.deleteRecord(itemId, 'images')
+        Images.deleteRecord(itemId)
           .then((data) => {
             res.status(201).send(`Item ${itemId} deleted`);
           })
@@ -203,7 +205,7 @@ app.get('/itemImages/:itemId/mainImage', function(req, res) {
       }
     }
 
-    Images.fetchMultipleItemImages(itemIds, 'images')
+    Images.fetchMultipleItemImages(itemIds)
       .then((data) => {
         if (data[0]) {
           const responseData = [];
@@ -226,7 +228,7 @@ app.get('/itemImages/:itemId/mainImage', function(req, res) {
         console.log(err);
       });
   } else {
-    Images.fetchItemImages(itemId, 'images')
+    Images.fetchItemImages(itemId)
       .then((data) => {
         if (data[0]) {
           const splitItemImages = data[0].itemImages.split('XXX');

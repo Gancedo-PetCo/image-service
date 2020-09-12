@@ -5,9 +5,9 @@ const {
   insertImages,
   handleSeeding,
   getUnsplashImages,
-} = require('./seed.js');
+} = require('../database/seed.js');
 
-const optionalData = require('./unsplashData.js');
+const optionalData = require('../database/unsplashData.js');
 
 const mockResponse1 = {
   data: {
@@ -50,17 +50,6 @@ const mockResponse2 = {
 const mockPromisesAray = [mockResponse1, mockResponse2];
 
 describe('The seeding script', () => {
-  // test('should successfully contact the Unsplash API with four requests', () => {
-  //   //The first parameter is the number of requests expected to reach the API per query.
-  //   //Since there are two queries (puppy and kitten), that should total four requests.
-  //   return handleSeeding(2, 10, 2, false)
-  //     .then(() => {
-  //       expect(promisesArray.length).toBe(4);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //     })
-  // });
 
   describe('has a helper function extractURLs that', () => {
     test('should extract only regular URLs from an Unspalsh API response', () => {
