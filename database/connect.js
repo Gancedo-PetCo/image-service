@@ -1,5 +1,5 @@
 const mysql = require('mysql');
-const { mysqlHost, mysqlUser, mysqlPassword } = require('../../config.js');
+const { mysqlHost, mysqlUser, mysqlPassword } = require('../config.js');
 
 var connection = mysql.createConnection({
   host: mysqlHost,

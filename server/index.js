@@ -1,12 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const Images = require('../database-mongodb/Images.js');
-const connect = require('../database-mongodb/connect.js');
+const Images = require('../database/Images.js');
 const cors = require('cors');
-const { removeData } = require('jquery');
 const app = express();
 app.use(cors());
+const morgan = require('morgan');
 
+app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use('*.js', function (req, res, next) {
@@ -23,23 +23,10 @@ app.get('/itemImages/:itemId', function(req, res) {
 
   Images.fetchItemImages(itemId)
     .then((data) => {
-      if (data) {
-        const { itemId, itemImages } = data;
-        const modifiedItemImages = [];
+      if (data[0]) {
+        const { itemImages } = data[0];
 
-        for (let i = 0; i < itemImages.length; i++) {
-          const copyOfObject = {};
-
-          for(let key in itemImages[i]) {
-            if (key === 'small' || key === 'medium' || key === 'large') {
-              copyOfObject[key] = itemImages[i][key];
-            }
-          }
-
-          modifiedItemImages.push(copyOfObject);
-        }
-
-        res.status(200).send({ itemId, itemImages: modifiedItemImages });
+        res.status(200).send({ itemId, itemImages });
       } else {
         res.sendStatus(404);
       }
@@ -50,38 +37,32 @@ app.get('/itemImages/:itemId', function(req, res) {
     });
 });
 
-const determineValidItemData = function(itemId, itemImages) {
-  if (!Array.isArray(itemImages)) {
-    return 'itemImages should be an array of itemImage objects, stringified with JSON.stringfy';
+const determineValidItemData = function(itemImages) {
+  const parsedItemImages = [];
+  if (itemImages.length > 3) {
+    return 'Too many itemImages included. Max is 3.';
   }
-
   for (let i = 0; i < itemImages.length; i++) {
-    const validItemObjectKeys = {
-      small: true,
-      medium: true,
-      large: true,
-    };
-
-    for (let key in itemImages[i]) {
-      if (!validItemObjectKeys[key]) {
-        return 'At least one itemImage object contains an invalid key';
-      }
-
-      validItemObjectKeys[key] = false;
-
-      if (!itemImages[i][key].match(/[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/ig)) {
-        return 'At least one URL is not a valid URL format';
-      }
+    if (!itemImages[i].match(/[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/ig)) {
+      return 'At least one URL is not a valid URL format';
     }
 
-    for (let key in validItemObjectKeys) {
-      if (validItemObjectKeys[key]) {
-        return `At least one itemImage object fails to contain the key '${key}'`;
-      }
+    if (!itemImages[i].includes('images.unsplash.com/photo-')) {
+      return 'At least one URL is not a Unsplash URL';
     }
+
+    const splitItemImage = itemImages[i].split('?');
+    const indexFirstDash = splitItemImage[0].indexOf('-');
+    const unsplashUniqueIdentifier = splitItemImage[0].substring(indexFirstDash + 1);
+
+    if (!unsplashUniqueIdentifier.includes('-')) {
+      return 'At least one URL is not a valid Unsplash photo URL';
+    }
+
+    parsedItemImages.push(unsplashUniqueIdentifier);
   }
 
-  return null;
+  return parsedItemImages;
 };
 
 app.post('/addItemImages/:itemId', (req, res) => {
@@ -100,25 +81,22 @@ app.post('/addItemImages/:itemId', (req, res) => {
     return res.status(400).send('No itemImages present in request query params');
   }
 
-  const itemImages = JSON.parse(receivedItemImages);
-
-  if (itemImages.length === 0) {
-    return res.status(400).send('No itemImages present in request query params');
-  }
+  const itemImages = receivedItemImages.split('XXX');
 
   Images.fetchItemImages(itemId)
     .then((data) => {
-      if (data) {
+      if (data[0]) {
         res.status(400).send('Item with that itemId already exists');
       } else {
-        const potentialErrorMessage = determineValidItemData(itemId, itemImages);
+        const potentialErrorMessage = determineValidItemData(itemImages);
 
-        if (potentialErrorMessage) {
-          res.status(400).send(potentialErrorMessage);
+        if (typeof(potentialErrorMessage) === 'string') {
+          return res.status(400).send(potentialErrorMessage);
         } else {
-          Images.insertRecord({ itemId, itemImages })
+          const itemImages = potentialErrorMessage.join('XXX');
+          Images.insertRecord(itemId, itemImages)
             .then((data) => {
-              res.status(201).send(`Item ${itemId} succesfully added to database`);
+              res.status(201).send(`Item ${itemId} successfully added to database`);
             })
             .catch((err) => {
               console.log(err);
@@ -149,25 +127,22 @@ app.put('/updateItemImages/:itemId', (req, res) => {
     return res.status(400).send('No itemImages present in request query params');
   }
 
-  const itemImages = JSON.parse(receivedItemImages);
-
-  if (itemImages.length === 0) {
-    return res.status(400).send('No itemImages present in request query params');
-  }
+  const itemImages = receivedItemImages.split('XXX');
 
   Images.fetchItemImages(itemId)
     .then((data) => {
-      if (!data) {
+      if (!data[0]) {
         res.status(400).send(`Item with the itemId ${itemId} does not exist`);
       } else {
-        const potentialErrorMessage = determineValidItemData(itemId, itemImages);
+        const potentialErrorMessage = determineValidItemData(itemImages);
 
-        if (potentialErrorMessage) {
-          res.status(400).send(potentialErrorMessage);
+        if (typeof(potentialErrorMessage) === 'string') {
+          return res.status(400).send(potentialErrorMessage);
         } else {
-          Images.updateRecord({ itemId, itemImages })
+          const itemImages = potentialErrorMessage.join('XXX');
+          Images.updateRecord(itemId, itemImages)
             .then((data) => {
-              res.status(201).send(`Item ${itemId} succesfully updated`);
+              res.status(201).send(`Item ${itemId} successfully updated`);
             })
             .catch((err) => {
               console.log(err);
@@ -195,7 +170,7 @@ app.delete('/deleteItemImages/:itemId', (req, res) => {
 
   Images.fetchItemImages(itemId)
     .then((data) => {
-      if (data) {
+      if (data[0]) {
         Images.deleteRecord(itemId)
           .then((data) => {
             res.status(201).send(`Item ${itemId} deleted`);
@@ -215,7 +190,7 @@ app.delete('/deleteItemImages/:itemId', (req, res) => {
 });
 
 app.get('/itemImages/:itemId/mainImage', function(req, res) {
-  const itemId = req.params.itemId;
+  const { itemId } = req.params;
 
   if (itemId.includes('array')) {
     const itemsInArray = itemId.substring(5);
@@ -224,20 +199,21 @@ app.get('/itemImages/:itemId/mainImage', function(req, res) {
     for (let i = 0; i < itemIds.length; i++) {
       const itemIdParsed = Number.parseInt(itemIds[i], 10);
 
-      if (itemIdParsed < 100 || itemIdParsed > 199) {
-        res.status(404).send('Item IDs not valid');
+      if (itemIdParsed < 100) {
+        res.status(404).send('At least one Item ID is not valid. Must be string representing integer number greater than 99.');
         return;
       }
     }
 
     Images.fetchMultipleItemImages(itemIds)
       .then((data) => {
-        if (data) {
+        if (data[0]) {
           const responseData = [];
           data.forEach((item) => {
+            const splitItemImages = data[0].itemImages.split('XXX');
             const parsedData = {
               itemId: item.itemId,
-              image: item.itemImages[0].small,
+              image: splitItemImages[0],
             };
 
             responseData.push(parsedData);
@@ -254,8 +230,9 @@ app.get('/itemImages/:itemId/mainImage', function(req, res) {
   } else {
     Images.fetchItemImages(itemId)
       .then((data) => {
-        if (data) {
-          res.status(200).send({image: data.itemImages[0].small});
+        if (data[0]) {
+          const splitItemImages = data[0].itemImages.split('XXX');
+          res.status(200).send({ itemId, image: splitItemImages[0] });
         } else {
           res.sendStatus(404);
         }

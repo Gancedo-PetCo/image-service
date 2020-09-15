@@ -1,36 +1,33 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Gallery from './Gallery.jsx';
-import $ from 'jquery';
-import config from '../../config.js'
+import axios from 'axios';
+import config from '../../config.js';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      itemImages: null
-    }
+      itemImages: []
+    };
   }
 
   componentDidMount () {
-    $.ajax ({
-      url: config.itemImages + this.props.itemId,
-      type: "get",
-      success: (data) => {
+    axios.get(config.itemImages + this.props.itemId)
+      .then((data) => {
         this.setState({
-          itemImages: data.itemImages
-        })
-      },
-      error: (error) => {
+          itemImages: data.data.itemImages.split('XXX')
+        });
+      })
+      .catch((error) => {
         console.log(error);
-      }
-    })
+      });
   }
 
   render() {
     return (
       <div>
-        {this.state.itemImages && <Gallery itemImages={this.state.itemImages}/>}
+        {this.state.itemImages.length > 0 && <Gallery itemImages={this.state.itemImages}/>}
       </div>
     );
   }

@@ -1,7 +1,8 @@
-const connect = require('./connect.js');
+const connection = require('./connect.js');
 const Images = require('./Images.js');
 const axios = require('axios');
-const token = require('../../config.js').TOKEN;
+const token = require('../config.js').TOKEN;
+
 
 const urls = [];
 
@@ -14,7 +15,7 @@ const extractURLs = function (responses) {
         const { regular } = result.urls;
         const splitThatRemovesQueries = regular.split('?');
         const indexStartOfUniquePhotoId = splitThatRemovesQueries[0].indexOf('-');
-        const uniquePhotoId = splitThatRemovesQueries[0].substring(indexStartOfUniquePhotoId + 1);
+        let uniquePhotoId = splitThatRemovesQueries[0].substring(indexStartOfUniquePhotoId + 1);
         urls.push(uniquePhotoId);
       }
     }
@@ -122,16 +123,15 @@ const insertImages = function (urls, totalNumberOfBatches, actuallyInsert, start
 };
 
 const handleSeeding = function(numberOfRequests, urlsPerRequest, totalNumberOfBatches, actuallyInsert, data, startingBatch) {
-
   return getUnsplashImages(numberOfRequests, urlsPerRequest, data)
     .then((urlsArray) => {
       return insertImages(urlsArray, totalNumberOfBatches, actuallyInsert, startingBatch);
     })
     .then(() => {
-      if (startingBatch === 9999) {
-        console.log('Successfully inserted images');
-        connect.stop();
+      if (startingBatch === 9990 || actuallyInsert === false) {
+        connection.end();
       }
+
     })
     .catch((error) => console.log(error)
     );

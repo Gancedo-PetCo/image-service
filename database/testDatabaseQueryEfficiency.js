@@ -117,9 +117,9 @@ const extractMultipleItems = function(response) {
   return result;
 };
 
-const makeActualCall = function(i, dataArray, queryTimeArray, queryHandler, dataSource, database, extractFunction, secondDataSource = []) {
+const makeActualCall = function(i, dataArray, queryTimeArray, queryHandler, dataSource, extractFunction, secondDataSource = []) {
   queryTimeArray[i] = [new Date().getTime()];
-  queryHandler(dataSource[i], database, secondDataSource[i])
+  queryHandler(dataSource[i], secondDataSource[i])
     .then((response) => {
       dataArray.push(extractFunction(response));
       queryTimeArray[i][1] = new Date().getTime();
@@ -132,7 +132,6 @@ const makeActualCall = function(i, dataArray, queryTimeArray, queryHandler, data
             queryTimeArray,
             queryHandler,
             dataSource,
-            database,
             extractFunction,
             secondDataSource
           ),
@@ -147,15 +146,15 @@ const makeActualCall = function(i, dataArray, queryTimeArray, queryHandler, data
     });
 };
 
-const makeActualUpdateCall = function(i, dataArray, queryTimeArray, queryHandler, dataSource, database, extractFunction, queryHandlerTwo) {
-  queryHandler(dataSource[i], database)
+const makeActualUpdateCall = function(i, dataArray, queryTimeArray, queryHandler, dataSource, extractFunction, queryHandlerTwo) {
+  queryHandler(dataSource[i])
     .then((response) => {
       const { itemImages } = response[0];
       if (itemImages) {
         const splitItemImages = itemImages.split('XXX');
         const newItemImages = splitItemImages.join('OOO');
         queryTimeArray[i] = [new Date().getTime()];
-        return queryHandlerTwo(dataSource[i], database, newItemImages);
+        return queryHandlerTwo(dataSource[i], newItemImages);
       } else {
         throw new Error('itemId not found');
       }
@@ -172,7 +171,6 @@ const makeActualUpdateCall = function(i, dataArray, queryTimeArray, queryHandler
             queryTimeArray,
             queryHandler,
             dataSource,
-            database,
             extractFunction,
             queryHandlerTwo
           ),
@@ -187,9 +185,9 @@ const makeActualUpdateCall = function(i, dataArray, queryTimeArray, queryHandler
     });
 };
 
-const makeActualCallSync = function(i, dataArray, queryTimeArray, queryHandler, data, database, extractFunction) {
+const makeActualCallSync = function(i, dataArray, queryTimeArray, queryHandler, data, extractFunction) {
   queryTimeArray[i] = [new Date().getTime()];
-  queryHandler(data, database)
+  queryHandler(data)
     .then((response) => {
       dataArray.push(extractFunction(response));
       queryTimeArray[i][1] = new Date().getTime();
@@ -215,7 +213,6 @@ const testMySQLCreate = function(queryHandler = insertRecord) {
       createResponseQueryTimes,
       queryHandler,
       newItemIds,
-      'images',
       extractCreateResponse,
       newItemData
     ),
@@ -236,7 +233,6 @@ const testMySQLUpdate = function(queryHandler = fetchItemImages, queryHandlerTwo
       updateResponseQueryTimes,
       queryHandler,
       newItemIds,
-      'images',
       extractUpdateResponse,
       queryHandlerTwo
     ),
@@ -257,7 +253,6 @@ const testMySQLDelete = function(queryHandler = deleteRecord) {
       deleteResponseQueryTimes,
       queryHandler,
       newItemIds,
-      'images',
       extractDeleteResponse
     ),
     10
@@ -278,7 +273,6 @@ const testMySQLImagesSingle = function(queryHandler = fetchItemImages) {
       singleItemResponseQueryTimes,
       queryHandler,
       singleItemData,
-      'images',
       extractSingleItem
     ),
     10
@@ -296,7 +290,6 @@ const testMySQLImagesSingleSync = function(queryHandler = fetchItemImages) {
         singleItemResponseQueryTimes,
         queryHandler,
         singleItemData[i],
-        'images',
         extractSingleItem
       ),
       requestDelay * i
@@ -317,7 +310,6 @@ const testMySQLImagesMulti = function(queryHandler = fetchMultipleItemImages) {
       multiItemResponseQueryTimes,
       queryHandler,
       arrayItemData,
-      'images',
       extractMultipleItems
     ),
     10
@@ -335,85 +327,6 @@ const testMySQLImagesMultiSync = function(queryHandler = fetchMultipleItemImages
         multiItemResponseQueryTimes,
         queryHandler,
         arrayItemData[i],
-        'images',
-        extractMultipleItems
-      ),
-      requestDelay * i
-    );
-  }
-};
-
-const singleItemResponseDataBad = [];
-const singleItemResponseQueryTimesBad = [];
-const testMySQLImagesSingleBad = function(queryHandler = fetchItemImages) {
-  console.log('singleBad started');
-
-  setTimeout(
-    makeActualCall.bind(
-      null,
-      0,
-      singleItemResponseDataBad,
-      singleItemResponseQueryTimesBad,
-      queryHandler,
-      singleItemData,
-      'imagesBad',
-      extractSingleItem
-    ),
-    10
-  );
-};
-
-const testMySQLImagesSingleBadSync = function(queryHandler = fetchItemImages) {
-  console.log('singleBad started');
-  for (let i = 0; i < singleItemData.length; i++) {
-    setTimeout(
-      makeActualCallSync.bind(
-        null,
-        i,
-        singleItemResponseDataBad,
-        singleItemResponseQueryTimesBad,
-        queryHandler,
-        singleItemData[i],
-        'imagesBad',
-        extractSingleItem
-      ),
-      requestDelay * i
-    );
-  }
-};
-
-const multiItemResponseDataBad = [];
-const multiItemResponseQueryTimesBad = [];
-const testMySQLImagesMultiBad = function(queryHandler = fetchMultipleItemImages) {
-  console.log('multiBad started');
-
-  setTimeout(
-    makeActualCall.bind(
-      null,
-      0,
-      multiItemResponseDataBad,
-      multiItemResponseQueryTimesBad,
-      queryHandler,
-      arrayItemData,
-      'imagesBad',
-      extractMultipleItems
-    ),
-    10
-  );
-};
-
-const testMySQLImagesMultiBadSync = function(queryHandler = fetchMultipleItemImages) {
-  console.log('multiBad started');
-  for (let i = 0; i < arrayItemData.length; i++) {
-    setTimeout(
-      makeActualCallSync.bind(
-        null,
-        i,
-        multiItemResponseDataBad,
-        multiItemResponseQueryTimesBad,
-        queryHandler,
-        arrayItemData[i],
-        'imagesBad',
         extractMultipleItems
       ),
       requestDelay * i
@@ -440,18 +353,6 @@ const analyzeResults = function() {
       accumulatedMultiItemQueryTime += difference;
     }
 
-    let accumulatedSingleItemQueryTimeBad = 0;
-    for (let i = 0; i < singleItemResponseQueryTimesBad.length; i++) {
-      const difference = singleItemResponseQueryTimesBad[i][1] - singleItemResponseQueryTimesBad[i][0];
-      accumulatedSingleItemQueryTimeBad += difference;
-    }
-
-    let accumulatedMultiItemQueryTimeBad = 0;
-    for (let i = 0; i < multiItemResponseQueryTimesBad.length; i++) {
-      const difference = multiItemResponseQueryTimesBad[i][1] - multiItemResponseQueryTimesBad[i][0];
-      accumulatedMultiItemQueryTimeBad += difference;
-    }
-
     let stringInsert = '';
 
     if (mode === 'sync') {
@@ -463,12 +364,6 @@ const analyzeResults = function() {
 
     const averageMultiGoodQueryTime = accumulatedMultiItemQueryTime / numberOfRandomQueries;
     console.log(`Average good MySQL query time for ${numberOfRandomQueries} queries${stringInsert} and an array of ItemIDs is ${averageMultiGoodQueryTime} ms`);
-
-    const averageBadGoodQueryTime = accumulatedSingleItemQueryTimeBad / numberOfRandomQueries;
-    console.log(`Average bad MySQL query time for ${numberOfRandomQueries} queries${stringInsert} and a single ItemID lookup is ${averageBadGoodQueryTime} ms`);
-
-    const averageMultiBadQueryTime = accumulatedMultiItemQueryTimeBad / numberOfRandomQueries;
-    console.log(`Average bad MySQL query time for ${numberOfRandomQueries} queries${stringInsert} and an array of ItemIDs is ${averageMultiBadQueryTime} ms`);
 
     if (mode === 'async') {
       let accumulatedCreateQueryTime = 0;
@@ -508,18 +403,15 @@ const tests = [
   testMySQLDelete,
   testMySQLUpdate,
   testMySQLCreate,
-  testMySQLImagesMultiBad,
-  testMySQLImagesSingleBad,
   testMySQLImagesMulti,
   testMySQLImagesSingle
 ];
+
 const testsSync = [
-  testMySQLImagesMultiBadSync,
-  testMySQLImagesSingleBadSync,
   testMySQLImagesMultiSync,
   testMySQLImagesSingleSync
 ];
-let connectionEnded = false;
+
 const handleTests = function() {
   let testSuite;
   if (mode === 'async') {

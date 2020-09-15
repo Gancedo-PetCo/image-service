@@ -20,7 +20,7 @@ const {
   testMySQLDelete,
   newItemIds,
   newItemData
-} = require('./testDatabaseQueryEfficiency.js');
+} = require('../database/testDatabaseQueryEfficiency.js');
 
 const fakeSingleItemData = [];
 const fakeArrayItemData = [];
@@ -46,7 +46,7 @@ while (fakeArrayItemData.length < 150) {
 const mockSingleItemQueryHandler = function(itemId) {
   const promiseResponse = new Promise ((resolve) => {
     const response = [{ itemImages: `${itemId} processed` }];
-    setTimeout(() => { resolve(response); }, 1);
+    setTimeout(() => { resolve(response); }, 2);
   });
 
   return promiseResponse;
@@ -58,7 +58,7 @@ const mockMultiItemQueryHandler = function(itemIds) {
     for (let i = 0; i < itemIds.length; i++) {
       arrayOfItemIds.push({ itemImages: `${itemIds[i]} processed` });
     }
-    setTimeout(() => { resolve(arrayOfItemIds); }, 1);
+    setTimeout(() => { resolve(arrayOfItemIds); }, 2);
   });
 
   return promiseResponse;
@@ -67,7 +67,7 @@ const mockMultiItemQueryHandler = function(itemIds) {
 const mockCreateAndDeleteQueryHandler = function() {
   const promiseResponse = new Promise ((resolve) => {
     const response = { affectedRows: 1 };
-    setTimeout(() => { resolve(response); }, 1);
+    setTimeout(() => { resolve(response); }, 2);
   });
 
   return promiseResponse;
@@ -76,7 +76,7 @@ const mockCreateAndDeleteQueryHandler = function() {
 const mockUpdateQueryHandler = function() {
   const promiseResponse = new Promise ((resolve) => {
     const response = { changedRows: 1 };
-    setTimeout(() => { resolve(response); }, 1);
+    setTimeout(() => { resolve(response); }, 2);
   });
 
   return promiseResponse;
