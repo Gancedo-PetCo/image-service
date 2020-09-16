@@ -10,7 +10,8 @@
     "build_client": "webpack",
     "preseed": "node database-mongodb/unsplashAPIcalls.js",
     "seed": "node database-mongodb/initiateSeeding.js",
-    "dbEfficiency": "node database-mongodb/testDatabaseQueryEfficiency.js"
+    "dbEfficiency": "node database-mongodb/testDatabaseQueryEfficiency.js",
+    "testRPS": "node server/testServerRPS.js"
   },
   "author": "",
   "license": "ISC",
@@ -25,6 +26,7 @@
     "mongoose": "^5.9.18",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
+    "newrelic": "^6.13.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   },

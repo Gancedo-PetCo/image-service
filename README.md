@@ -104,7 +104,7 @@ Note1: Recommended you use Postman to make a PUT request
 ### DELETE
 
 Method: DELETE
-Endpoint: /itemImages/:itemId
+Endpoint: /deleteItemImages/:itemId
 Response: The string: Item ${itemId} deleted
 
 

@@ -4,9 +4,10 @@ const Images = require('../database/Images.js');
 const cors = require('cors');
 const app = express();
 app.use(cors());
-const morgan = require('morgan');
+// const morgan = require('morgan');
+const NewRelic = require('newrelic');
 
-app.use(morgan('dev'));
+// app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use('*.js', function (req, res, next) {
