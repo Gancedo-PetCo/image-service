@@ -5,18 +5,20 @@ const axios = require('axios');
 //--------------------------
 
 // runTests should be true to actually test serverRPS. If running unit tests, set to false
-const runTests = true;
-// const runTests = false;
+// const runTests = true;
+const runTests = false;
 
 //First httpRequestString is for index.html. Second for API GET request. Third for API POST
-// const httpRequestString = 'http://127.0.0.1:3003/?itemID=';
+//For unit tests. Use first
+const httpRequestString = 'http://127.0.0.1:3003/?itemID=';
 // const httpRequestString = 'http://127.0.0.1:3003/itemImages/';
-const httpRequestString = 'http://127.0.0.1:3003/addItemImages/';
+// const httpRequestString = 'http://127.0.0.1:3003/addItemImages/';
 
 //If testing POST route, second trailingHttpRequestString should be uncommented. Otherwise,
 //first one should be uncommented
-// const trailingHttpRequestString = '';
-const trailingHttpRequestString = '?itemImages=';
+//For unit tests. Use first
+const trailingHttpRequestString = '';
+// const trailingHttpRequestString = '?itemImages=';
 
 //Decide what Series of RPS tests you want to run
 //IMPORTANT - for POST testing, you can only run one RPS test at a time
@@ -27,9 +29,11 @@ const testsStorage = new Map();
 // testsStorage.set('1RPS', 1);
 // testsStorage.set('10RPS', 10);
 // testsStorage.set('100RPS', 100);
-testsStorage.set('200RPS', 200);
+// testsStorage.set('200RPS', 200);
+// testsStorage.set('350RPS', 350);
 // testsStorage.set('400RPS', 400);
-// testsStorage.set('400RPS', 500);
+testsStorage.set('450RPS', 450);
+// testsStorage.set('500RPS', 500);
 // testsStorage.set('600RPS', 600);
 
 
@@ -235,3 +239,4 @@ module.exports.generateQueries = generateQueries;
 module.exports.processedRequests = processedRequests;
 module.exports.runIsolatedTest = runIsolatedTest;
 module.exports.runStressTest = runStressTest;
+module.exports.generateItemData = generateItemData;
