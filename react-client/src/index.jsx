@@ -1,27 +1,27 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import Gallery from './Gallery.jsx';
-import axios from 'axios';
-import config from '../../config.js';
+
+
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      itemImages: []
-    };
+    if (this.props.itemImages) {
+      const splitItemImages = this.props.itemImages.split('XXX');
+      this.state = {
+        itemImages: splitItemImages
+      };
+    } else {
+      this.state = {
+        itemImages: []
+      };
+    }
   }
 
   componentDidMount () {
-    axios.get(config.itemImages + this.props.itemId)
-      .then((data) => {
-        this.setState({
-          itemImages: data.data.itemImages.split('XXX')
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    if (this.props.dataFetcher) {
+      this.props.dataFetcher.call(this);
+    }
   }
 
   render() {
@@ -33,7 +33,4 @@ class App extends React.Component {
   }
 }
 
-// let itemId = '100';
-const urlParams = new URLSearchParams(window.location.search);
-const itemId = urlParams.get('itemID');
-ReactDOM.render(<App itemId={itemId}/>, document.getElementById('gallery'));
+export default App;
