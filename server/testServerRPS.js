@@ -8,6 +8,16 @@ const axios = require('axios');
 // const runTests = true;
 const runTests = false;
 
+//For each test selected, 4 tests run. The first 3 are isolated tests where the selected
+//RPS (see below for testsStorage) are run one time, over the course of a second. The fourth
+// and final test is the "Stress Test" that makes the selected RPS every second for 60 seconds.
+//The Stress test causes errors at high RPS that are not due to internal server errors.
+//Instead, they are due to connection time outs errors. And so the ability to run only
+//the first three tests can be acheived by setting skipStressTest to true
+//For unit tests, set to false
+const skipStressTest = false;
+// const skipStressTest = true;
+
 //First httpRequestString is for index.html. Second for API GET request. Third for API POST
 //For unit tests. Use first
 const httpRequestString = 'http://127.0.0.1:3003/?itemID=';
@@ -32,9 +42,11 @@ const testsStorage = new Map();
 // testsStorage.set('200RPS', 200);
 // testsStorage.set('350RPS', 350);
 // testsStorage.set('400RPS', 400);
-testsStorage.set('450RPS', 450);
+// testsStorage.set('450RPS', 450);
 // testsStorage.set('500RPS', 500);
 // testsStorage.set('600RPS', 600);
+testsStorage.set('1000RPS', 1000);
+
 
 
 //--------------------------
@@ -181,21 +193,24 @@ const runStressTest = function(RPS) {
   const testRequests = {
 
   };
-  let count = 60;
+  if(!skipStressTest) {
+    let count = 60;
 
-  while (count > 0) {
-    const requests = generateQueries(RPS);
-    testRequests[`test${count}Requests`] = requests;
-    count--;
+    while (count > 0) {
+      const requests = generateQueries(RPS);
+      testRequests[`test${count}Requests`] = requests;
+      count--;
+    }
   }
 
-  console.log(`Running ${RPS} RPS Stress Test at ${new Date()}`);
-
   if (runTests) {
-    count = 60;
-    while (count > 0) {
-      setTimeout(runIsolatedTest.bind(null, RPS, testRequests[`test${count}Requests`]), count * 1000 + 5000);
-      count--;
+    if(!skipStressTest) {
+      console.log(`Running ${RPS} RPS Stress Test at ${new Date()}`);
+      count = 60;
+      while (count > 0) {
+        setTimeout(runIsolatedTest.bind(null, RPS, testRequests[`test${count}Requests`]), count * 1000 + 5000);
+        count--;
+      }
     }
     setTimeout(deleteCreatedPOSTs, 75000);
   } else {
