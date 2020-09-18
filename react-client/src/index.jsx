@@ -1,27 +1,15 @@
-import React from 'react';
-import Gallery from './Gallery.jsx';
+const React = require('react');
+const Gallery = require('./Gallery.jsx');
 
-
-
-class App extends React.Component {
+const App = class extends React.Component {
   constructor(props) {
     super(props);
-    if (this.props.itemImages) {
-      const splitItemImages = this.props.itemImages.split('XXX');
-      this.state = {
-        itemImages: splitItemImages
-      };
-    } else {
-      this.state = {
-        itemImages: []
-      };
-    }
-  }
 
-  componentDidMount () {
-    if (this.props.dataFetcher) {
-      this.props.dataFetcher.call(this);
-    }
+    const splitItemImages = this.props.itemImages.split('XXX');
+
+    this.state = {
+      itemImages: splitItemImages
+    };
   }
 
   render() {
@@ -31,6 +19,6 @@ class App extends React.Component {
       </div>
     );
   }
-}
+};
 
-export default App;
+module.exports = App;

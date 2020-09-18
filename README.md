@@ -10,10 +10,12 @@
 1. With the app's root directory set to cd in terminal, run >npm install
 2. Make an API account with https://unsplash.com/documentation#creating-a-developer-account
 3. In the app's root folder, there is a file titled "config.example.js". Make a duplicate of this file and rename it to "config.js". Then use the terminal to run >git status. You should not see the new config.js file listed. If you do, then the name of the file is wrong. Once the correct name of the file is confirmed, you can copy your Unsplash API key to the file. You can also update the other fields that require an update.
-4. Before seeding the database, you have to run >npm run preseed. This script will make 20 Unsplash API calls (which means you're allotment per hour will be charged 20)  and may take some time to complete since the next call is not made until the previous call completes. Once that script finishes running,  you can now seed the database by running >npm run seed. If you also want to seed MySQL, run >npm run seedMySQL. Same for Riak and >npm run Riak. 
-5. Start server with >npm run start
-6. To run tests, >npm run test. Note that some of the tests may take ~35s or more to complete.
-7. To see the service in action, first run >npm run client. Then visit http://127.0.0.1:3003/?itemID=###  where ### can be any integer between 100-10,000,099 , no commas
+4. Before seeding the database, you have to run >npm run preseed. This script will make 20 Unsplash API calls (which means you're allotment per hour will be charged 20)  and may take some time to complete since the next call is not made until the previous call completes. Once that script finishes running,  you can now seed the database by running >npm run seed. If you also want to seed MySQL, run >npm run seedMySQL. Same for Riak and >npm run Riak.
+5. Before starting the server, you have to consider what mode to run it in. There is Client-side Render (CSR) mode that serves static files from react-client/dist and Server-side Render (SSR) mode that dynamically generates the HTML file and serves the remainder of the static files from react-client/templates. Default is SSR. You can switch modes by commenting in/out the appropriate serverMode lines of code near the top of server/index.js.
+6. Start server with >npm run start
+7. To run tests, >npm run test. Note that some of the tests may take ~35s or more to complete.
+8. To see the service in action, first run >npm run client. Then visit http://127.0.0.1:3003/?itemID=### (CSR Mode) or http://127.0.0.1:3003/product/###  (SSR Mode) where ### can be any integer between 100-10,000,099 , no commas
+9. The ability to test the server's RPS capacity is located in a file at server/testServerRPS.js. At the top of this file are several options that can be selected for tests. See the comments above each option for more info. The command to actually run these tests is >npm run testRPS. Note you will need to setup your own New Relic APM to take advantage of this feature. In server/index.js, you will also have to uncomment the line: const NewRelic = require('newrelic');
 
 ## URLs and Unsplash Unique Identifier Strings(UUIS) 
 

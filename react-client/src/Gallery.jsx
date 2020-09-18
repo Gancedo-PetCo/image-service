@@ -1,11 +1,10 @@
-import React from 'react';
-import { findDOMNode } from 'react-dom';
+const React = require('react');
 
 const beginningURL = 'https://images.unsplash.com/photo-';
 const middleURL = '?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=';
 const endURL = '&fit=max&ixid=eyJhcHBfaWQiOjE0MzcyOX0';
 
-class Gallery extends React.Component {
+const Gallery = class extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -90,6 +89,7 @@ class Gallery extends React.Component {
         <div className="gallerySmallImages">
           {this.props.itemImages.map((image, index) =>
             <img
+              key={`gallery-image-${index}`}
               id={`gallerySmallImage${index}`}
               className={`gallerySmallImage
               ${this.state.currentImage === image ? "galleryImageSelected" : ""}`}
@@ -104,6 +104,6 @@ class Gallery extends React.Component {
     );
   }
 
-}
+};
 
-export default Gallery;
+module.exports = Gallery;

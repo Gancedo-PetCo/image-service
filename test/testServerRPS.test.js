@@ -60,16 +60,16 @@ describe('The file testServerRPS.js has', () => {
         expect(typeof(queries[i])).toBe('string');
       }
     });
-    //"specific format" being a string in the form "http://127.0.0.1:3003/?itemID=###"
+    //"specific format" being a string in the form "http://127.0.0.1:3003/product/###"
     //where ### can be any number from 100 - 10,000,099
     test('generates each string within the array to follow a specific format', () => {
       const queries = generateQueries(100);
 
       for (let i = 0; i < queries.length; i++) {
         const query = queries[i];
-        const parsedItemId = Number.parseInt(query.split('=')[1], 10);
+        const parsedItemId = Number.parseInt(query.split('/')[4], 10);
 
-        expect(query).toContain('http://127.0.0.1:3003/?itemID=');
+        expect(query).toContain('http://127.0.0.1:3003/product/');
         expect(parsedItemId).toBeGreaterThanOrEqual(100);
         expect(parsedItemId).toBeLessThanOrEqual(10000099);
       }
@@ -86,14 +86,14 @@ describe('The file testServerRPS.js has', () => {
         expect(typeof(processedRequests[i])).toBe('string');
       }
     });
-    //"specific format" being a string in the form "http://127.0.0.1:3003/?itemID=###"
+    //"specific format" being a string in the form "http://127.0.0.1:3003/product/###"
     //where ### can be any number from 100 - 10,000,099
     test('generates each string within the array to follow a specific format', () => {
       for (let i = 0; i < processedRequests.length; i++) {
         const query = processedRequests[i];
-        const parsedItemId = Number.parseInt(query.split('=')[1], 10);
+        const parsedItemId = Number.parseInt(query.split('/')[4], 10);
 
-        expect(query).toContain('http://127.0.0.1:3003/?itemID=');
+        expect(query).toContain('http://127.0.0.1:3003/product/');
         expect(parsedItemId).toBeGreaterThanOrEqual(100);
         expect(parsedItemId).toBeLessThanOrEqual(10000099);
       }
@@ -121,7 +121,7 @@ describe('The file testServerRPS.js has', () => {
       }
       expect(count).toBe(60);
     });
-    //"specific format" being a string in the form "http://127.0.0.1:3003/?itemID=###"
+    //"specific format" being a string in the form "http://127.0.0.1:3003/product/###"
     //where ### can be any number from 100 - 10,000,099
     test('generates each string within the arrays to follow a specific format', () => {
       const allQueries = runStressTest(100);
@@ -130,9 +130,9 @@ describe('The file testServerRPS.js has', () => {
         const oneSetOfQueries = allQueries[key];
         for (let i = 0; i < oneSetOfQueries.length; i++) {
           const query = oneSetOfQueries[i];
-          const parsedItemId = Number.parseInt(query.split('=')[1], 10);
+          const parsedItemId = Number.parseInt(query.split('/')[4], 10);
 
-          expect(query).toContain('http://127.0.0.1:3003/?itemID=');
+          expect(query).toContain('http://127.0.0.1:3003/product/');
           expect(parsedItemId).toBeGreaterThanOrEqual(100);
           expect(parsedItemId).toBeLessThanOrEqual(10000099);
         }

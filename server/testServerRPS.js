@@ -10,7 +10,7 @@ const runTests = false;
 
 //For each test selected, 4 tests run. The first 3 are isolated tests where the selected
 //RPS (see below for testsStorage) are run one time, over the course of a second. The fourth
-// and final test is the "Stress Test" that makes the selected RPS every second for 60 seconds.
+// and final test is the "Stress Test" that makes the selected RPS every second for 60 seconds (option to change this added below).
 //The Stress test causes errors at high RPS that are not due to internal server errors.
 //Instead, they are due to connection time outs errors. And so the ability to run only
 //the first three tests can be acheived by setting skipStressTest to true
@@ -18,9 +18,16 @@ const runTests = false;
 const skipStressTest = false;
 // const skipStressTest = true;
 
+//Stress test makes the selected amount of RPS per second for the numberOfStressTestCycles.
+//For example, default of 60 amd an RPS of 500 means 500 requests made every second for
+//60 seconds for a total of 30,000 requests.
+//Not recommended to raise number above 60.
+//Set to 60 for unit tests
+const numberOfStressTestCycles = 60;
+
 //First httpRequestString is for index.html. Second for API GET request. Third for API POST
 //For unit tests. Use first
-const httpRequestString = 'http://127.0.0.1:3003/?itemID=';
+const httpRequestString = 'http://127.0.0.1:3003/product/'; //<-- SSR version. For CSR, this string should looke like this 'http://127.0.0.1:3003/?itemID='
 // const httpRequestString = 'http://127.0.0.1:3003/itemImages/';
 // const httpRequestString = 'http://127.0.0.1:3003/addItemImages/';
 
@@ -44,6 +51,7 @@ const testsStorage = new Map();
 // testsStorage.set('400RPS', 400);
 // testsStorage.set('450RPS', 450);
 // testsStorage.set('500RPS', 500);
+// testsStorage.set('550RPS', 550);
 // testsStorage.set('600RPS', 600);
 testsStorage.set('1000RPS', 1000);
 
@@ -194,7 +202,7 @@ const runStressTest = function(RPS) {
 
   };
   if(!skipStressTest) {
-    let count = 60;
+    let count = numberOfStressTestCycles;
 
     while (count > 0) {
       const requests = generateQueries(RPS);
@@ -206,7 +214,7 @@ const runStressTest = function(RPS) {
   if (runTests) {
     if(!skipStressTest) {
       console.log(`Running ${RPS} RPS Stress Test at ${new Date()}`);
-      count = 60;
+      let count = numberOfStressTestCycles;
       while (count > 0) {
         setTimeout(runIsolatedTest.bind(null, RPS, testRequests[`test${count}Requests`]), count * 1000 + 5000);
         count--;
