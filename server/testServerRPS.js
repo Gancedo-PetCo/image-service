@@ -47,20 +47,32 @@ const testsStorage = new Map();
 // testsStorage.set('10RPS', 10);
 // testsStorage.set('100RPS', 100);
 // testsStorage.set('200RPS', 200);
+// testsStorage.set('250RPS', 250);
+// testsStorage.set('300RPS', 300);
 // testsStorage.set('350RPS', 350);
-// testsStorage.set('400RPS', 400);
+testsStorage.set('400RPS', 400);
 // testsStorage.set('450RPS', 450);
 // testsStorage.set('500RPS', 500);
 // testsStorage.set('550RPS', 550);
 // testsStorage.set('600RPS', 600);
-testsStorage.set('1000RPS', 1000);
+// testsStorage.set('1000RPS', 1000);
 
+//To run a test where the traffic throughout the day is expected to be the same items, more or less, for a long
+//period of time, set hotItems = to the require statement. Otherwise, the empty array
+//For unit tests, set hotItems to an empty array
+// const hotItems = require('./hotItems.js');
+const hotItems = [];
 
+//Even if site traffic is highly predictable, there is still some fluctuation and so hotItemProbability determines
+//if a randomly selected hotItem is used for the query or if a random item is used. The roll made in generateQueries
+//is from 0 to 1 and, if the roll is less than hotItemProbability, then a random item is used
+// const hotItemProbability = 0.1;
+const hotItemProbability = 0.05;
+// const hotItemProbability = 0;
 
 //--------------------------
 //Generate test boundaries
 //--------------------------
-const hotItems = [];
 
 const generateHotItems = function() {
   let count = 1000;
@@ -75,7 +87,7 @@ const generateHotItems = function() {
   }
 };
 
-if (runTests && httpRequestString !== 'http://127.0.0.1:3003/addItemImages/') {
+if (runTests && httpRequestString !== 'http://127.0.0.1:3003/addItemImages/' && hotItems.length === 0) {
   generateHotItems();
 }
 
@@ -99,7 +111,7 @@ const generateQueries = function (RPS) {
     if (httpRequestString !== 'http://127.0.0.1:3003/addItemImages/') {
       const roll = Math.random();
 
-      if (roll < 0.05) {
+      if (roll < hotItemProbability) {
         itemId = Math.floor(Math.random() * 9000000 + 100);
       } else {
         const index = Math.floor(Math.random() * 1000);
