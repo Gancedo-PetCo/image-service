@@ -6,9 +6,11 @@ const { promisifyAll } = require('bluebird');
 const redis = require("redis");
 const cors = require('cors');
 const server = express();
+const { ImagesSecret } = require('../config.js');
+const path = require('path');
 server.use(cors());
 // const morgan = require('morgan');
-const NewRelic = require('newrelic');
+// require('newrelic');
 
 //-------------------------
 //Server Mode
@@ -92,6 +94,18 @@ if (serverMode === 'CSR') {
       .catch((err) => {
         console.log(err);
       });
+  });
+
+  server.get('/module/:moduleName', function(req, res) {
+    const { moduleName } = req.params;
+    const { sdc_access_key } = req.headers;
+
+    if (sdc_access_key === ImagesSecret) {
+      const modulePath = path.resolve(__dirname, '..', 'react-client', 'src', moduleName);
+      res.status(200).sendFile(modulePath);
+    } else {
+      res.status(403).send('Invalid access key');
+    }
   });
 }
 

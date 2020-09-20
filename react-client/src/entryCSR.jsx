@@ -1,5 +1,5 @@
 const App = require('./index.jsx');
-const { itemImages } = require('../../config.js');
+const { itemImages } = require('../../preferences.js');
 const axios = require('axios');
 const ReactDOM = require('react-dom');
 
