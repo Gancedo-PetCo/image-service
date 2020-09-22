@@ -7,8 +7,8 @@
     "test": "jest --runInBand --silent",
     "start": "node server/start.js",
     "client": "webpack",
-    "preseed": "node database-mongodb/unsplashAPIcalls.js",
-    "seed": "node database-mongodb/initiateSeeding.js",
+    "preseed": "node database/unsplashAPIcalls.js",
+    "seed": "node database/initiateSeeding.js",
     "dbEfficiency": "node database-mongodb/testDatabaseQueryEfficiency.js",
     "testRPS": "node server/testServerRPS.js"
   },

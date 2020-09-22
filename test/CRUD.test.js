@@ -1,4 +1,9 @@
 const axios = require('axios');
+const redis = require('redis');
+const { promisifyAll } = require('bluebird');
+
+const client = redis.createClient();
+promisifyAll(client);
 
 describe('The server\'s CRUD operations', () => {
   describe('includes the GET method for the path /product/:itemId where', () => {
@@ -381,5 +386,40 @@ describe('The server\'s CRUD operations', () => {
           });
       });
     });
+  });
+
+  describe('correctly save the info they just queried from DB, in redis', () => {
+    test('for GET /product/:itemId route', (done) => {
+      client.getAsync('SSR100')
+        .then((response) => {
+          expect(response).toBeDefined();
+          done();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    });
+  });
+
+  test('for GET /itemImages/:itemId route', (done) => {
+    client.getAsync('100')
+      .then((response) => {
+        expect(response).toBeDefined();
+        done();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+
+  test('for GET /itemImages/:itemId/mainImage route', (done) => {
+    client.getAsync('single100')
+      .then((response) => {
+        expect(response).toBeDefined();
+        done();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   });
 });
