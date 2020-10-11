@@ -1,7 +1,7 @@
 const connection = require('./connect.js');
 const Images = require('./Images.js');
-const axios = require('axios');
-const token = require('../config.js').TOKEN;
+// const axios = require('axios');
+// const token = require('../config.js').TOKEN;
 
 
 const urls = [];

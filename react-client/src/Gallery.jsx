@@ -1,4 +1,16 @@
 const React = require('react');
+const {
+  gallery,
+  galleryPreview,
+  galleryMainImageDiv,
+  galleryMainImage,
+  galleryZoomIconAndText,
+  galleryZoomIcon,
+  galleryZoomText,
+  gallerySmallImages,
+  gallerySmallImage,
+  galleryImageSelected,
+} = require('./CSS.js');
 
 const beginningURL = 'https://images.unsplash.com/photo-';
 const middleURL = '?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=';
@@ -68,25 +80,33 @@ const Gallery = class extends React.Component {
   }
 
   render() {
+    const { preview, x, y } = this.state;
+    const previewParsed = [];
+
+    if (preview && x && y) {
+      const newStyle = Object.assign({}, galleryPreview);
+      newStyle.background = `no-repeat url('${beginningURL}${this.state.currentImage}${middleURL}1000${endURL}') ${-x * 3.06 + 170}px ${-y * 3.06 + 305}px`;
+      previewParsed.push(<div className="galleryPreview" style={newStyle}></div>);
+    }
+
     return (
-      <div className="gallery">
-        <div className="galleryMainImageDiv">
+      <div className="gallery" style={gallery}>
+        <div className="galleryMainImageDiv" style={galleryMainImageDiv}>
           <img
             className="galleryMainImage"
             src={`${beginningURL}${this.state.currentImage}${middleURL}400${endURL}`}
             onMouseEnter={this.handleMouseEnter.bind(this)}
             onMouseMove={this.handleMouseMove.bind(this)}
             onMouseLeave={this.handleMouseLeave.bind(this)}
+            style={galleryMainImage}
           />
         </div>
-        <div className="galleryZoomIconAndText">
-          <div className="galleryZoomIcon"></div>
-          <span className="galleryZoomText">Roll over image to zoom</span>
+        <div className="galleryZoomIconAndText" style={galleryZoomIconAndText}>
+          <div className="galleryZoomIcon" style={galleryZoomIcon}></div>
+          <span className="galleryZoomText" style={galleryZoomText}>Roll over image to zoom</span>
         </div>
-        {this.state.preview && <div
-          className="galleryPreview"
-          style={{backgroundImage: `url('${beginningURL}${this.state.currentImage}${middleURL}1000${endURL}')`, backgroundPosition: this.getPosition()}}></div>}
-        <div className="gallerySmallImages">
+        {previewParsed}
+        <div className="gallerySmallImages" style={gallerySmallImages}>
           {this.props.itemImages.map((image, index) =>
             <img
               key={`gallery-image-${index}`}
@@ -97,6 +117,7 @@ const Gallery = class extends React.Component {
               onClick={this.onImageClick.bind(this, image, `gallerySmallImage${index}`)}
               onMouseOver={this.onImageMouseOver.bind(this, `gallerySmallImage${index}`)}
               onMouseOut={this.onImageMouseOut.bind(this, `gallerySmallImage${index}`)}
+              style={this.state.currentImage === image ? galleryImageSelected : gallerySmallImage}
             />
           )}
         </div>
