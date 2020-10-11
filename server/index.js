@@ -3,7 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const Images = require('../database/Images.js');
 const { promisifyAll } = require('bluebird');
-const redis = require("redis");
+const redis = require('redis');
 const cors = require('cors');
 const server = express();
 const { ImagesSecret } = require('../config.js');
@@ -45,16 +45,15 @@ if (serverMode === 'CSR') {
     <html>
     <head>
       <title>Gallery</title>
-      <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
-      <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
-      <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.20.0/axios.min.js"></script>
-      <link rel="stylesheet" href="/style.css"></link>
     </head>
     <body>
       <div id="gallery">
         ${body}
       </div>
     </body>
+    <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.20.0/axios.min.js"></script>
     <script src="/bundle.js"></script>
     </html>
     `;
