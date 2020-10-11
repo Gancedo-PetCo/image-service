@@ -4,16 +4,20 @@
 1. Usage
 2. URLs and UUIS
 3. CRUD API
+4. Redis Installation Instructions
 
 ## Usage
 
 1. With the app's root directory set to cd in terminal, run >npm install
 2. Make an API account with https://unsplash.com/documentation#creating-a-developer-account
 3. In the app's root folder, there is a file titled "config.example.js". Make a duplicate of this file and rename it to "config.js". Then use the terminal to run >git status. You should not see the new config.js file listed. If you do, then the name of the file is wrong. Once the correct name of the file is confirmed, you can copy your Unsplash API key to the file. You can also update the other fields that require an update.
-4. Before seeding the database, you have to run >npm run preseed. This script will make 20 Unsplash API calls (which means you're allotment per hour will be charged 20)  and may take some time to complete since the next call is not made until the previous call completes. Once that script finishes running,  you can now seed the database by running >npm run seed. If you also want to seed MySQL, run >npm run seedMySQL. Same for Riak and >npm run Riak. 
-5. Start server with >npm run start
-6. To run tests, >npm run test. Note that some of the tests may take ~35s or more to complete.
-7. To see the service in action, first run >npm run client. Then visit http://127.0.0.1:3003/?itemID=###  where ### can be any integer between 100-10,000,099 , no commas
+4. Before seeding the database, you have to run >npm run preseed. This script will make 20 Unsplash API calls (which means you're allotment per hour will be charged 20)  and may take some time to complete since the next call is not made until the previous call completes. Once that script finishes running,  you can now seed the database by running >npm run seed.
+5. This project now uses Redia as a memcache. See below for instructions on how to install Redis in the section: Redis Installation Instructions. Your have to have Redis launched before continuing.
+6. Before starting the server, you have to consider what mode to run it in. There is Client-side Render (CSR) mode that serves static files from react-client/dist and Server-side Render (SSR) mode that dynamically generates the HTML file and serves the remainder of the static files from react-client/templates. Default is SSR. You can switch modes by commenting in/out the appropriate serverMode lines of code near the top of server/index.js.
+7. Start server with >npm run start
+8. To run tests, >npm run test. Note that some of the tests may take ~35s or more to complete.
+9. To see the service in action, first run >npm run client. Then visit http://127.0.0.1:3003/?itemID=### (CSR Mode) or http://127.0.0.1:3003/product/###  (SSR Mode) where ### can be any integer between 100-10,000,099 , no commas
+10. The ability to test the server's RPS capacity is located in a file at server/testServerRPS.js. At the top of this file are several options that can be selected for tests. See the comments above each option for more info. The command to actually run these tests is >npm run testRPS. Note you will need to setup your own New Relic APM to take advantage of this feature. In server/index.js, you will also have to uncomment the line: const NewRelic = require('newrelic');
 
 ## URLs and Unsplash Unique Identifier Strings(UUIS) 
 
@@ -104,9 +108,23 @@ Note1: Recommended you use Postman to make a PUT request
 ### DELETE
 
 Method: DELETE
-Endpoint: /itemImages/:itemId
+Endpoint: /deleteItemImages/:itemId
 Response: The string: Item ${itemId} deleted
 
+
+## Redis Installation Instructions
+
+These instructions apply only to Mac users. Some parts may or may not apply to other OSs.
+
+1. Install Redis with >brew install redis
+2. The print out at the end of the install tells you where the redis config file is located and how to start the server. Most likely this will be /usr/local/etc/redis.conf and, for redis to use the alterations to soon be made in the config, the comman to launch is likely >redis-server /usr/local/etc/redis.conf (Do not launch yet  but do double-check to see if your print-out matches those here.)
+3. Make the following changes in the Redis config:
+-In the Snapshotting section, comment out all the “save” commands to turn off snapshotting.
+-In Memory Management, uncomment “maxmemory” and set the value to 400MB
+-Uncomment “maxmemory-policy” and set it to allkeys-lfu
+-Uncommented “maxmemory-samples” and set it to 7
+4. With those changes saved, launch the Redis server with the command mentioned in point 2 above.
+5. You can now return to the  Usage section
 
 
 

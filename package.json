@@ -7,32 +7,33 @@
     "test": "jest --runInBand --silent",
     "start": "node server/start.js",
     "client": "webpack",
-    "build_client": "webpack",
-    "preseed": "node database-mongodb/unsplashAPIcalls.js",
-    "seed": "node database-mongodb/initiateSeeding.js",
-    "dbEfficiency": "node database-mongodb/testDatabaseQueryEfficiency.js"
+    "preseed": "node database/unsplashAPIcalls.js",
+    "seed": "node database/initiateSeeding.js",
+    "dbEfficiency": "node database-mongodb/testDatabaseQueryEfficiency.js",
+    "testRPS": "node server/testServerRPS.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/register": "^7.11.5",
     "axios": "^0.19.2",
-    "basho-riak-client": "^2.4.0",
     "bluebird": "^3.7.2",
+    "body-parser": "^1.19.0",
     "compression-webpack-plugin": "^4.0.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "jquery": "^3.5.1",
-    "mongoose": "^5.9.18",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
+    "newrelic": "^6.13.0",
+    "path": "^0.12.7",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react-dom": "^16.13.1",
+    "redis": "^3.0.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.2",
+    "@babel/core": "^7.11.6",
     "@babel/preset-env": "^7.10.2",
     "@babel/preset-react": "^7.10.1",
-    "@shelf/jest-mongodb": "^1.1.5",
     "babel-loader": "^8.1.0",
     "babel-preset-es2015": "^6.24.1",
     "enzyme": "^3.11.0",
@@ -43,8 +44,6 @@
     "jest": "^26.1.0",
     "jest-environment-enzyme": "^7.1.2",
     "jest-enzyme": "^7.1.2",
-    "nodemon": "^2.0.4",
-    "supertest": "^4.0.2",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.12"
   }

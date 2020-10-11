@@ -1,38 +1,143 @@
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const Images = require('../database/Images.js');
+const { promisifyAll } = require('bluebird');
+const redis = require("redis");
 const cors = require('cors');
-const app = express();
-app.use(cors());
-const morgan = require('morgan');
+const server = express();
+const { ImagesSecret } = require('../config.js');
+const path = require('path');
+server.use(cors());
+// const morgan = require('morgan');
+// require('newrelic');
 
-app.use(morgan('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
-app.use('*.js', function (req, res, next) {
+//-------------------------
+//Server Mode
+//-------------------------
+// const serverMode = 'CSR';
+const serverMode = 'SSR';
+
+// server.use(morgan('dev'));
+server.get('/bundle.js', function (req, res, next) {
   req.url += '.gz';
   res.set('Content-Encoding', 'gzip');
   next();
 });
+server.use(bodyParser.json());
+server.use(bodyParser.urlencoded({extended: true}));
 
-app.use(express.static('./react-client/dist'));
+const client = redis.createClient();
 
+promisifyAll(client);
 
-app.get('/itemImages/:itemId', function(req, res) {
+if (serverMode === 'CSR') {
+  server.use(express.static('./react-client/dist'));
+} else if (serverMode === 'SSR') {
+  require('@babel/register');
+  const ReactDOMServer = require('react-dom/server');
+  const React = require('react');
+  const App = require('../react-client/src/index.jsx');
+
+  const constructHTMLFromTemplate = function(body) {
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Gallery</title>
+      <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+      <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+      <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.20.0/axios.min.js"></script>
+      <link rel="stylesheet" href="/style.css"></link>
+    </head>
+    <body>
+      <div id="gallery">
+        ${body}
+      </div>
+    </body>
+    <script src="/bundle.js"></script>
+    </html>
+    `;
+  };
+
+  server.use(express.static('./react-client/templates'));
+  server.get('/product/:itemId', (req, res) => {
+    const { itemId } = req.params;
+
+    client.getAsync(`SSR${itemId}`)
+      .then((response) => {
+        if (response) {
+          res.status(200).send(response);
+        } else {
+          Images.fetchItemImages(itemId)
+            .then((data) => {
+              if (data[0]) {
+                const { itemImages } = data[0];
+
+                const body = ReactDOMServer.renderToString(React.createElement(App, { itemImages }, null));
+                const SSR = constructHTMLFromTemplate(body);
+                res.status(200).send(SSR);
+                client.setAsync(`SSR${itemId}`, SSR)
+                  .catch((err) => {
+                    console.log(err);
+                  });
+              } else {
+                res.sendStatus(404);
+              }
+            })
+            .catch((err) => {
+              res.status(500).send(err);
+              console.log(err);
+            });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+
+  server.get('/module/:moduleName', function(req, res) {
+    const { moduleName } = req.params;
+    const { sdc_access_key } = req.headers;
+
+    if (sdc_access_key === ImagesSecret) {
+      const modulePath = path.resolve(__dirname, '..', 'react-client', 'src', moduleName);
+      res.status(200).sendFile(modulePath);
+    } else {
+      res.status(403).send('Invalid access key');
+    }
+  });
+}
+
+server.get('/itemImages/:itemId', function(req, res) {
   const { itemId } = req.params;
 
-  Images.fetchItemImages(itemId)
-    .then((data) => {
-      if (data[0]) {
-        const { itemImages } = data[0];
-
-        res.status(200).send({ itemId, itemImages });
+  client.getAsync(itemId)
+    .then((response) => {
+      if(response) {
+        res.status(200).send({ itemId, itemImages: response });
       } else {
-        res.sendStatus(404);
+        Images.fetchItemImages(itemId)
+          .then((data) => {
+            if (data[0]) {
+              const { itemImages } = data[0];
+
+              res.status(200).send({ itemId, itemImages });
+              client.setAsync(itemId, itemImages)
+                .catch((err) => {
+                  console.log(err);
+                });
+            } else {
+              res.sendStatus(404);
+            }
+          })
+          .catch((err) => {
+            res.status(500).send(err);
+            console.log(err);
+          });
       }
     })
     .catch((err) => {
-      res.status(500).send(err);
       console.log(err);
     });
 });
@@ -65,7 +170,7 @@ const determineValidItemData = function(itemImages) {
   return parsedItemImages;
 };
 
-app.post('/addItemImages/:itemId', (req, res) => {
+server.post('/addItemImages/:itemId', (req, res) => {
   const { itemId } = req.params;
   const receivedItemImages = req.query.itemImages;
 
@@ -111,7 +216,7 @@ app.post('/addItemImages/:itemId', (req, res) => {
     });
 });
 
-app.put('/updateItemImages/:itemId', (req, res) => {
+server.put('/updateItemImages/:itemId', (req, res) => {
   const { itemId } = req.params;
   const receivedItemImages = req.query.itemImages;
 
@@ -157,7 +262,7 @@ app.put('/updateItemImages/:itemId', (req, res) => {
     });
 });
 
-app.delete('/deleteItemImages/:itemId', (req, res) => {
+server.delete('/deleteItemImages/:itemId', (req, res) => {
   const { itemId } = req.params;
 
   if (itemId) {
@@ -189,7 +294,7 @@ app.delete('/deleteItemImages/:itemId', (req, res) => {
     });
 });
 
-app.get('/itemImages/:itemId/mainImage', function(req, res) {
+server.get('/itemImages/:itemId/mainImage', function(req, res) {
   const { itemId } = req.params;
 
   if (itemId.includes('array')) {
@@ -205,44 +310,69 @@ app.get('/itemImages/:itemId/mainImage', function(req, res) {
       }
     }
 
-    Images.fetchMultipleItemImages(itemIds)
-      .then((data) => {
-        if (data[0]) {
-          const responseData = [];
-          data.forEach((item) => {
-            const splitItemImages = data[0].itemImages.split('XXX');
-            const parsedData = {
-              itemId: item.itemId,
-              image: splitItemImages[0],
-            };
-
-            responseData.push(parsedData);
-          });
-          res.status(200).send(responseData);
+    client.getAsync(itemId)
+      .then((response) => {
+        if (response) {
+          const responseParsed = JSON.parse(response);
+          res.status(200).send(responseParsed);
         } else {
-          res.sendStatus(404);
+          Images.fetchMultipleItemImages(itemIds)
+            .then((data) => {
+              if (data[0]) {
+                const responseData = [];
+                data.forEach((item) => {
+                  const splitItemImages = data[0].itemImages.split('XXX');
+                  const parsedData = {
+                    itemId: item.itemId,
+                    image: splitItemImages[0],
+                  };
+
+                  responseData.push(parsedData);
+                });
+                res.status(200).send(responseData);
+                client.setAsync(itemId, JSON.stringify(responseData))
+                  .catch((err) => {
+                    console.log(err);
+                  });
+              } else {
+                res.sendStatus(404);
+              }
+            })
+            .catch((err) => {
+              res.status(500).send(err);
+              console.log(err);
+            });
         }
       })
       .catch((err) => {
-        res.status(500).send(err);
         console.log(err);
       });
   } else {
-    Images.fetchItemImages(itemId)
-      .then((data) => {
-        if (data[0]) {
-          const splitItemImages = data[0].itemImages.split('XXX');
-          res.status(200).send({ itemId, image: splitItemImages[0] });
+    client.getAsync(`single${itemId}`)
+      .then((response) => {
+        if (response) {
+          res.status(200).send({ itemId, image: response });
         } else {
-          res.sendStatus(404);
+          Images.fetchItemImages(itemId)
+            .then((data) => {
+              if (data[0]) {
+                const splitItemImages = data[0].itemImages.split('XXX');
+                res.status(200).send({ itemId, image: splitItemImages[0] });
+                client.setAsync(`single${itemId}`, splitItemImages[0])
+                  .catch((err) => {
+                    console.log(err);
+                  });
+              } else {
+                res.sendStatus(404);
+              }
+            })
+            .catch((err) => {
+              res.status(500).send(err);
+              console.log(err);
+            });
         }
-      })
-      .catch((err) => {
-        res.status(500).send(err);
-        console.log(err);
       });
   }
-
 });
 
-module.exports = app;
+module.exports = server;

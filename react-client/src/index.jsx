@@ -1,27 +1,15 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import Gallery from './Gallery.jsx';
-import axios from 'axios';
-import config from '../../config.js';
+const React = require('react');
+const Gallery = require('./Gallery.jsx');
 
-class App extends React.Component {
+const App = class extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      itemImages: []
-    };
-  }
 
-  componentDidMount () {
-    axios.get(config.itemImages + this.props.itemId)
-      .then((data) => {
-        this.setState({
-          itemImages: data.data.itemImages.split('XXX')
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    const splitItemImages = this.props.itemImages.split('XXX');
+
+    this.state = {
+      itemImages: splitItemImages
+    };
   }
 
   render() {
@@ -31,9 +19,6 @@ class App extends React.Component {
       </div>
     );
   }
-}
+};
 
-// let itemId = '100';
-const urlParams = new URLSearchParams(window.location.search);
-const itemId = urlParams.get('itemID');
-ReactDOM.render(<App itemId={itemId}/>, document.getElementById('gallery'));
+module.exports = App;
